@@ -1,8 +1,37 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import { DocumentBuilder, SwaggerDocumentOptions, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  await app.listen(process.env.PORT ?? 3000);
+
+  app.use((req, res, next) => {
+    res.header('Content-Type', 'application/json; charset=utf-8');
+    next();
+  });
+
+  const config = new DocumentBuilder()
+    .setTitle('Walashee API')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+
+  const options: SwaggerDocumentOptions = {
+    operationIdFactory: (_: string, methodKey: string) => methodKey,
+  };
+
+  const document = SwaggerModule.createDocument(app, config, options);
+
+  SwaggerModule.setup('api', app, document);
+
+  app.enableCors({
+    origin: [
+      'http://local.walashee.com:3000',
+      'http://192.168.1.139:3000',
+    ],
+    credentials: true,
+  })
+
+  await app.listen(process.env.PORT ?? 3001, '0.0.0.0');
 }
 bootstrap();
