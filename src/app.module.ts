@@ -10,8 +10,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import jwtConfig from 'config/jwt.config';
 import { EntityLookupModule } from './modules/entity-lookup/entity-lookup.module';
 import { AwsModule } from './modules/aws/aws.module';
-import awsConfig from 'config/aws.config';
 import openai from 'config/openai.config';
+import awsConfig from 'config/aws.config';
 
 const configurations = [
   database,
