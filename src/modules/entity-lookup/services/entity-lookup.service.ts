@@ -65,7 +65,19 @@ export class EntityLookupService {
     return null;
   }
 
-    async findUserByMobileNumber(fullPhoneNumber: string, relations: string[] = []) {
+  async findCountryByPhoneCode(phoneCode: string, relations: string[] = []) {
+    if (phoneCode) {
+      return await this.countryRepo.findOne({
+        where: {
+          phoneCode
+        },
+        relations,
+      });
+    }
+    return null;
+  }
+
+  async findUserByMobileNumber(fullPhoneNumber: string, relations: string[] = []) {
     if (fullPhoneNumber) {
       return await this.usersRepo.findOne({
         where: {

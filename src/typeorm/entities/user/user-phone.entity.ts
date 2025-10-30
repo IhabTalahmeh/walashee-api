@@ -10,11 +10,14 @@ export class UserPhone extends Timestamp {
     @PrimaryColumn({ type: 'uuid' })
     id: UUID;
 
-    @OneToOne(() => Country, country => country.id)
+    @ManyToOne(() => Country, country => country)
     country: Country;
 
     @Column()
-    phoneNumber: string;
+    phoneCode: string;
+
+    @Column()
+    number: string;
 
     @ManyToOne(() => User, (user) => user.phones, { onDelete: 'CASCADE' })
     @JoinColumn()
@@ -33,6 +36,6 @@ export class UserPhone extends Timestamp {
     })
     isPrimary: boolean;
 
-    @Column()
+    @Column({ unique: true })
     fullPhoneNumber: string;
 }

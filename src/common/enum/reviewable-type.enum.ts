@@ -1,5 +1,5 @@
 export enum EReviewableType {
-	TRADER = "trader",
+	AGENT = "agent",
     DRIVER = "driver",
     CUSTOMER = "customer",
     STORE = "store",

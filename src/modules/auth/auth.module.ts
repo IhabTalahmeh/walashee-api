@@ -14,6 +14,7 @@ import { EntityLookupService } from '../entity-lookup/services/entity-lookup.ser
 import { VerificationService } from './services/verification.service';
 import { PasswordService } from './services/password.service';
 import { CloudfrontService } from '../aws/services/cloudfront.service';
+import { WhatsappService } from 'src/common/services/whatsapp.service';
 
 
 @Module({
@@ -40,7 +41,8 @@ import { CloudfrontService } from '../aws/services/cloudfront.service';
     VerificationService,
     PasswordService,
     UtilityService,
-    CloudfrontService
+    CloudfrontService,
+    WhatsappService
   ],
   controllers: [AuthController],
   exports: [JwtStrategy],

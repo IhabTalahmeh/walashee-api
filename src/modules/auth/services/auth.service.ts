@@ -5,7 +5,7 @@ import { Repository } from 'typeorm';
 import { UtilityService } from 'src/common/services/utility.service';
 import { LoginByEmailDto } from '../dto/login.dto';
 import { AccessTokenGeneratorService } from './access-token-generator.service';
-import { AccessToken, User, UserEmail } from 'src/typeorm/entities';
+import { AccessToken, User, UserEmail, UserPhone } from 'src/typeorm/entities';
 import { IUser } from 'src/common/interfaces';
 import type { UUID } from "crypto";
 import { instanceToPlain } from 'class-transformer';
@@ -16,6 +16,8 @@ import { EContactType } from 'src/common/enum/contact-type.enum';
 import { EntityLookupService } from 'src/modules/entity-lookup/services/entity-lookup.service';
 import { VerificationService } from './verification.service';
 import { SwitchRoleDto } from '../dto/switch-role.dto';
+import { WhatsappService } from 'src/common/services/whatsapp.service';
+import { removeLeadingZero } from 'src/common/utils/utils';
 
 @Injectable()
 export class AuthService {
@@ -35,19 +37,48 @@ export class AuthService {
     @InjectRepository(VerificationCode)
     private verificationCodeRepo: Repository<VerificationCode>,
 
+    @InjectRepository(UserPhone)
+    private userPhoneRepo: Repository<UserPhone>,
+
     private accessTokenGenerator: AccessTokenGeneratorService,
     private verificationService: VerificationService,
 
     private utility: UtilityService,
+    private whatsappService: WhatsappService
   ) { }
 
   async registerByMobile(dto: RegisterByMobileDto) {
+    dto.number = removeLeadingZero(dto.number)
     const fullPhoneNumber = `${dto.phoneCode}${dto.number}`
+
     const user = await this.entityLookupService.findUserByMobileNumber(fullPhoneNumber);
-    
+
     if (user) {
-      throw new ConflictException("Phone number is alrady in use by another account");
+      throw new ConflictException("Phone number is alrady used by another account");
     }
+
+    const createdUser = this.usersRepository.create({
+      id: this.utility.generateUUID(),
+    });
+    const savedUser = await this.usersRepository.save(createdUser)
+    const country = await this.entityLookupService.findCountryByPhoneCode(dto.phoneCode);
+
+    const createdPhone = this.userPhoneRepo.create({
+      id: this.utility.generateUUID(),
+      user: savedUser,
+      phoneCode: dto.phoneCode,
+      number: dto.number,
+      fullPhoneNumber: `${dto.phoneCode}${dto.number}`,
+      country: { id: country?.id },
+    });
+
+    const savedPhone = await this.userPhoneRepo.save(createdPhone);
+
+    const code = await this.verificationService.generatePhoneVerificationCode(savedUser.id);
+
+    await this.whatsappService.sendText("972568657339", `رمز التحقق الخاص بك هو ${code.code}، يرجى تزويد الوكيل بهذا الرمز لتأكيد هويتك وتثبيت طلبك. \n\nاسم المنتج: معجون أسنان. \nالسعر: 12 شيكل. \nتاريخ الطلب: 12/10/2025`);
+
+    console.log('new user')
   }
 
   async registerByEmail(dto: RegisterByEmailDto) {
@@ -68,7 +99,7 @@ export class AuthService {
     });
 
     const email = await this.userEmailRepo.save(newEmail);
-    await this.verificationService.generateVerificationCode(EContactType.EMAIL, email.id);
+    await this.verificationService.generateEmailVerificationCode(email.id);
     return instanceToPlain(newUser);
   }
 

@@ -1,5 +1,5 @@
 export enum EPublicRoleType {
-	TRADER = 'trader',
+	AGENT = 'agent',
   DRIVER = 'driver',
   CUSTOMER = 'customer'
 }

@@ -29,16 +29,16 @@ export class User extends Timestamp {
 	phones: UserPhone[];
 
 	@Exclude()
-	@Column()
+	@Column({ default: null })
 	password: string;
 
-	@Column({ nullable: false })
+	@Column({ default: null })
 	fullName: string;
 
 	@Column({
 		type: 'enum',
 		enum: EGender,
-		nullable: false,
+		default: null,
 	})
 	gender: EGender;
 

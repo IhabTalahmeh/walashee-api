@@ -31,7 +31,6 @@ export class RegisterByEmailDto extends BaseRegisterDto {
 export class RegisterByMobileDto {
 
     @ApiProperty({ type: 'string' })
-    @IsPhoneNumber()
     @IsNotEmpty()
     number: string;
 
