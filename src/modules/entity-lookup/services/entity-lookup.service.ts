@@ -1,6 +1,8 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import type { UUID } from "crypto";
+import { EVerificationStatusType } from "src/common/enum/verification-status.enum";
+import { UserPhone } from "src/typeorm/entities";
 import { Address } from "src/typeorm/entities/common/address.entity";
 import { Country } from "src/typeorm/entities/common/county.entity";
 import { UserEmail } from "src/typeorm/entities/user/user-email.entity";
@@ -14,6 +16,7 @@ export class EntityLookupService {
     @InjectRepository(User) private usersRepo: Repository<User>,
     @InjectRepository(Address) private addressesRepo: Repository<Address>,
     @InjectRepository(UserEmail) private userEmailsRepo: Repository<UserEmail>,
+    @InjectRepository(UserPhone) private userPhoneRepo: Repository<UserPhone>,
     @InjectRepository(Country) private countryRepo: Repository<Country>,
   ) { }
 
@@ -48,6 +51,15 @@ export class EntityLookupService {
     return await this.userEmailsRepo.findOne({
       where: {
         email
+      },
+      relations,
+    });
+  }
+
+  async findUserPhoneByPhoneNumber(fullPhoneNumber: string, relations: string[] = []) {
+    return await this.userPhoneRepo.findOne({
+      where: {
+        fullPhoneNumber,
       },
       relations,
     });

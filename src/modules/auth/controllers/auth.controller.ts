@@ -14,6 +14,7 @@ import { AddEmailDto } from '../dto/add-email.dto';
 import { PasswordService } from '../services/password.service';
 import { ForgotEmailPasswordDto } from '../dto/forgot-email-password.dto';
 import { SwitchRoleDto } from '../dto/switch-role.dto';
+import { ResendPhoneCodeDto } from '../dto/resent-mobile-code.dto';
 
 @UsePipes(new ValidationPipe({
     transform: true,
@@ -44,7 +45,7 @@ export class AuthController {
         );
     }
 
-    
+
     // Role Endpoints
 
     @Post('role/switch')
@@ -52,7 +53,7 @@ export class AuthController {
     switchRole(
         @Req() request,
         @Body() dto: SwitchRoleDto
-    ){
+    ) {
         const userId = request.user.sub;
         return this.authService.switchRole(userId, dto)
     }
@@ -61,7 +62,7 @@ export class AuthController {
     // Register Endpoints
 
     @Post('register/mobile')
-    registerByMobile(@Body() dto: RegisterByMobileDto){
+    registerByMobile(@Body() dto: RegisterByMobileDto) {
         return this.authService.registerByMobile(dto)
     }
 
@@ -143,6 +144,13 @@ export class AuthController {
         @Body() dto: ResendEmailCodeDto
     ) {
         return this.verificationService.resendEmailVerificationCode(dto)
+    }
+
+    @Post('mobile/resend-code')
+    resendMobileVerificationCode(
+        @Body() dto: ResendPhoneCodeDto
+    ) {
+        return this.verificationService.resendMobileVerificationCode(dto)
     }
 
     @Post('mobile/verify')

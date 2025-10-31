@@ -11,10 +11,10 @@ import { UtilityService } from 'src/common/services/utility.service';
 import { AccessToken, Address, Company, Country, PasswordResetCode, User, UserEmail, UserPhone } from 'src/typeorm/entities';
 import { VerificationCode } from 'src/typeorm/entities/auth/verification-code.entity';
 import { EntityLookupService } from '../entity-lookup/services/entity-lookup.service';
-import { VerificationService } from './services/verification.service';
 import { PasswordService } from './services/password.service';
 import { CloudfrontService } from '../aws/services/cloudfront.service';
 import { WhatsappService } from 'src/common/services/whatsapp.service';
+import { VerificationService } from './services/verification.service';
 
 
 @Module({

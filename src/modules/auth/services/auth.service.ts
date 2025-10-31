@@ -53,13 +53,18 @@ export class AuthService {
 
     const user = await this.entityLookupService.findUserByMobileNumber(fullPhoneNumber);
 
-    if (user) {
-      throw new ConflictException("Phone number is alrady used by another account");
+    if (user?.verified == false) {
+      const userPhone = await this.entityLookupService.findUserPhoneByPhoneNumber(fullPhoneNumber);
+      const code = await this.verificationService.generatePhoneVerificationCode(userPhone?.id as UUID);
+      await this.whatsappService.sendText(process.env.WHATSAPP_NUMBER as string, `رمز التحقق الخاص بك هو: ${code.code}`);
+    } else if (user?.verified) {
+      throw new ConflictException("Phone number is already used by another account.")
     }
 
     const createdUser = this.usersRepository.create({
       id: this.utility.generateUUID(),
     });
+
     const savedUser = await this.usersRepository.save(createdUser)
     const country = await this.entityLookupService.findCountryByPhoneCode(dto.phoneCode);
 
@@ -74,11 +79,8 @@ export class AuthService {
 
     const savedPhone = await this.userPhoneRepo.save(createdPhone);
 
-    const code = await this.verificationService.generatePhoneVerificationCode(savedUser.id);
-
-    await this.whatsappService.sendText("972568657339", `رمز التحقق الخاص بك هو ${code.code}، يرجى تزويد الوكيل بهذا الرمز لتأكيد هويتك وتثبيت طلبك. \n\nاسم المنتج: معجون أسنان. \nالسعر: 12 شيكل. \nتاريخ الطلب: 12/10/2025`);
-
-    console.log('new user')
+    const code = await this.verificationService.generatePhoneVerificationCode(savedPhone.id);
+    await this.whatsappService.sendText(process.env.WHATSAPP_NUMBER as string, `رمز التحقق الخاص بك هو: ${code.code}`);
   }
 
   async registerByEmail(dto: RegisterByEmailDto) {

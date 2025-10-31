@@ -59,6 +59,12 @@ export class User extends Timestamp {
 	})
 	languageCode: ELanguageCode;
 
+	@Column({
+		type: 'boolean',
+		default: false,
+	})
+	verified: boolean;
+
 	apiToken: string;
 	refreshToken: string;
 

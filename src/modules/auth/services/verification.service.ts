@@ -11,6 +11,8 @@ import { EVerificationStatusType } from "src/common/enum/verification-status.enu
 import { ResendEmailCodeDto } from "../dto/resend-email-code.dto";
 import { AddEmailDto } from "../dto/add-email.dto";
 import { User, UserEmail, UserPhone } from "src/typeorm/entities";
+import { ResendPhoneCodeDto } from "../dto/resent-mobile-code.dto";
+import { WhatsappService } from "src/common/services/whatsapp.service";
 
 
 @Injectable()
@@ -28,6 +30,9 @@ export class VerificationService {
 
     @InjectRepository(UserPhone)
     private userPhoneRepo: Repository<UserPhone>,
+
+    private whatsappService: WhatsappService,
+
   ) { }
 
   async generateEmailVerificationCode(emailId: UUID) {
@@ -125,6 +130,12 @@ export class VerificationService {
     if (email) await this.generateEmailVerificationCode(email.id)
 
     return { complete: true };
+  }
+
+  async resendMobileVerificationCode(dto: ResendPhoneCodeDto) {
+    const userPhone = await this.entityLookupService.findUserPhoneByPhoneNumber(dto.fullPhoneNumber);
+    const code = await this.generatePhoneVerificationCode(userPhone?.id as UUID);
+    return await this.whatsappService.sendText(process.env.WHATSAPP_NUMBER as string, `رمز التحقق الخاص بك هو: ${code.code}`);
   }
 
   async addEmail(dto: AddEmailDto, userId: UUID) {
