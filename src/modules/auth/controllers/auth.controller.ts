@@ -15,6 +15,7 @@ import { PasswordService } from '../services/password.service';
 import { ForgotEmailPasswordDto } from '../dto/forgot-email-password.dto';
 import { SwitchRoleDto } from '../dto/switch-role.dto';
 import { ResendPhoneCodeDto } from '../dto/resent-mobile-code.dto';
+import { VerifyPhoneDto } from '../dto/verify-mobile.dto';
 
 @UsePipes(new ValidationPipe({
     transform: true,
@@ -154,7 +155,11 @@ export class AuthController {
     }
 
     @Post('mobile/verify')
-    verifyMobile() { }
+    verifyPhone(
+        @Body() dto: VerifyPhoneDto
+    ) {
+        return this.verificationService.verifyPhone(dto)
+    }
 
     @Post('mobile/add')
     addMobile() { }

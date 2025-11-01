@@ -10,9 +10,13 @@ import { VerifyEmailDto } from "../dto/verify-email.dto";
 import { EVerificationStatusType } from "src/common/enum/verification-status.enum";
 import { ResendEmailCodeDto } from "../dto/resend-email-code.dto";
 import { AddEmailDto } from "../dto/add-email.dto";
-import { User, UserEmail, UserPhone } from "src/typeorm/entities";
+import { AccessToken, User, UserEmail, UserPhone } from "src/typeorm/entities";
 import { ResendPhoneCodeDto } from "../dto/resent-mobile-code.dto";
 import { WhatsappService } from "src/common/services/whatsapp.service";
+import { VerifyPhoneDto } from "../dto/verify-mobile.dto";
+import { instanceToPlain } from "class-transformer";
+import { removeLeadingZero } from "src/common/utils/utils";
+import { AccessTokenGeneratorService } from "./access-token-generator.service";
 
 
 @Injectable()
@@ -31,7 +35,14 @@ export class VerificationService {
     @InjectRepository(UserPhone)
     private userPhoneRepo: Repository<UserPhone>,
 
+    @InjectRepository(User)
+    private usersRepo: Repository<User>,
+
+    @InjectRepository(AccessToken)
+    private accessTokensRepository: Repository<AccessToken>,
+
     private whatsappService: WhatsappService,
+    private accessTokenGenerator: AccessTokenGeneratorService,
 
   ) { }
 
@@ -119,6 +130,52 @@ export class VerificationService {
     return { complete: true };
   }
 
+  async verifyPhone(dto: VerifyPhoneDto) {
+    dto.number = removeLeadingZero(dto.number);
+    const fullPhoneNumber = `${dto.phoneCode}${dto.number}`;
+
+    const verificationCode = await this.verificationCodeRepo.findOne({
+      where: {
+        code: dto.code,
+        phone: {
+          fullPhoneNumber: fullPhoneNumber,
+          status: EVerificationStatusType.NOT_VERIFIED
+        },
+      },
+      relations: ['phone']
+    });
+
+    if (!verificationCode) throw new BadRequestException('Invalid verification code');
+
+    await this.userPhoneRepo.update(verificationCode.phone.id, { status: EVerificationStatusType.VERIFIED });
+
+    let user = await this.entityLookupService.findUserByMobileNumber(fullPhoneNumber);
+
+    if (user?.verified == false) {
+      await this.usersRepo.update(user.id, { verified: true });
+
+      const signedToken = await this.accessTokenGenerator.generateAccessToken(
+        user.id,
+        user.role,
+      );
+
+      const accessToken = this.accessTokensRepository.create({
+        id: signedToken.id,
+        userId: user.id,
+        refreshToken: signedToken.refresh,
+      });
+
+      this.accessTokensRepository.save(accessToken);
+
+      user = await this.entityLookupService.findUserByMobileNumber(fullPhoneNumber) as User;
+      user.apiToken = signedToken.token;
+      user.refreshToken = signedToken.refresh;
+
+    }
+
+    return instanceToPlain(user);
+  }
+
   async resendEmailVerificationCode(dto: ResendEmailCodeDto) {
     const email = await this.userEmailRepo.findOne({
       where: {
@@ -133,9 +190,12 @@ export class VerificationService {
   }
 
   async resendMobileVerificationCode(dto: ResendPhoneCodeDto) {
-    const userPhone = await this.entityLookupService.findUserPhoneByPhoneNumber(dto.fullPhoneNumber);
+    dto.number = removeLeadingZero(dto.number);
+    const fullPhoneNumber = `${dto.phoneCode}${dto.number}`;
+    const userPhone = await this.entityLookupService.findUserPhoneByPhoneNumber(fullPhoneNumber);
     const code = await this.generatePhoneVerificationCode(userPhone?.id as UUID);
-    return await this.whatsappService.sendText(process.env.WHATSAPP_NUMBER as string, `رمز التحقق الخاص بك هو: ${code.code}`);
+    await this.whatsappService.sendText(process.env.WHATSAPP_NUMBER as string, `رمز التحقق الخاص بك هو: ${code.code}`);
+    return { complete: true }
   }
 
   async addEmail(dto: AddEmailDto, userId: UUID) {

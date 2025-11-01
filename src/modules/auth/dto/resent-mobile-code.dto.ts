@@ -5,5 +5,9 @@ export class ResendPhoneCodeDto {
 
     @ApiProperty({ type: 'string' })
     @IsNotEmpty()
-    fullPhoneNumber: 'string';
+    phoneCode: string;
+
+    @ApiProperty({ type: 'string' })
+    @IsNotEmpty()
+    number: string;
 }
