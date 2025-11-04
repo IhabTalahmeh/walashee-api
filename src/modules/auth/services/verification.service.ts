@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable } from "@nestjs/common";
+import { BadRequestException, ConflictException, Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import type { UUID } from "crypto";
 import { EContactType } from "src/common/enum/contact-type.enum";
@@ -11,12 +11,13 @@ import { EVerificationStatusType } from "src/common/enum/verification-status.enu
 import { ResendEmailCodeDto } from "../dto/resend-email-code.dto";
 import { AddEmailDto } from "../dto/add-email.dto";
 import { AccessToken, User, UserEmail, UserPhone } from "src/typeorm/entities";
-import { ResendPhoneCodeDto } from "../dto/resent-mobile-code.dto";
+import { PhoneDto } from "../dto/phone.dto";
 import { WhatsappService } from "src/common/services/whatsapp.service";
 import { VerifyPhoneDto } from "../dto/verify-mobile.dto";
 import { instanceToPlain } from "class-transformer";
 import { removeLeadingZero } from "src/common/utils/utils";
 import { AccessTokenGeneratorService } from "./access-token-generator.service";
+import { EVerificationPurpose } from "src/common/enum/verification-purpose.enum";
 
 
 @Injectable()
@@ -76,35 +77,58 @@ export class VerificationService {
     }
   }
 
-  async generatePhoneVerificationCode(phoneId: UUID): Promise<VerificationCode> {
+  async generateAccountVerificationCode(dto: PhoneDto): Promise<VerificationCode> {
     const code = await this.utility.getUniqueVerificationCode();
-    const phone = await this.userPhoneRepo.findOne({
-      where: { id: phoneId, status: EVerificationStatusType.NOT_VERIFIED }
-    }) as UserPhone;
-
-    const record = await this.verificationCodeRepo.findOne({
-      where: { phone: { id: phoneId } }
-    });
-
     const expiresAt = new Date(Date.now() + 3e5); // 5 minutes
 
-    if (record) {
-      await this.verificationCodeRepo.update(record.id, {
+    const fullPhoneNumber = `${dto.phoneCode}${dto.number}`;
+
+    const verifiedPhone = await this.entityLookupService.findVerifiedUserPhoneByPhoneNumber(fullPhoneNumber);
+
+    if (verifiedPhone) {
+      throw new ConflictException("Phone number is already used by another account.");
+    }
+
+    const unverifiedPhone = await this.entityLookupService.findUnverifiedUserPhoneByPhoneNumber(fullPhoneNumber) as UserPhone;
+    const existingCode = await this.entityLookupService.findVerificationCodePhoneNumber(fullPhoneNumber) as VerificationCode;
+
+    if (existingCode) {
+      await this.verificationCodeRepo.update(existingCode.id, {
         code,
         expiresAt
       });
 
-      return await this.verificationCodeRepo.findOne({
-        where: { id: record.id }
-      }) as VerificationCode;
+      return await this.entityLookupService.findVerificationCodeById(existingCode.id) as VerificationCode;
     }
 
     const createdVerificationCode = this.verificationCodeRepo.create({
       id: this.utility.generateUUID(),
       code,
       type: EContactType.MOBILE,
-      phone,
+      purpose: EVerificationPurpose.ACCOUNT,
+      phone: { id: unverifiedPhone.id },
       expiresAt
+    });
+
+    return await this.verificationCodeRepo.save(createdVerificationCode);
+  }
+
+  async generateLoginVerificationCode(fullPhoneNumber: string): Promise<VerificationCode> {
+    const code = await this.utility.getUniqueVerificationCode();
+    const phone = await this.entityLookupService.findVerifiedUserPhoneByPhoneNumber(fullPhoneNumber) as UserPhone;
+    const expiresAt = new Date(Date.now() + 3e5); // 5 minutes
+
+    if(!phone){
+      throw new NotFoundException("Phone number does not belong to an account.");
+    }
+
+    const createdVerificationCode = this.verificationCodeRepo.create({
+      id: this.utility.generateUUID(),
+      code,
+      type: EContactType.MOBILE,
+      purpose: EVerificationPurpose.LOGIN,
+      phone: { id: phone.id },
+      expiresAt,
     });
 
     return await this.verificationCodeRepo.save(createdVerificationCode);
@@ -137,10 +161,12 @@ export class VerificationService {
     const verificationCode = await this.verificationCodeRepo.findOne({
       where: {
         code: dto.code,
+        purpose: EVerificationPurpose.ACCOUNT,
         phone: {
           fullPhoneNumber: fullPhoneNumber,
-          status: EVerificationStatusType.NOT_VERIFIED
+          status: EVerificationStatusType.NOT_VERIFIED,
         },
+        expiresAt: MoreThan(new Date()),
       },
       relations: ['phone']
     });
@@ -149,7 +175,7 @@ export class VerificationService {
 
     await this.userPhoneRepo.update(verificationCode.phone.id, { status: EVerificationStatusType.VERIFIED });
 
-    let user = await this.entityLookupService.findUserByMobileNumber(fullPhoneNumber);
+    let user = await this.entityLookupService.findUserByPhoneNumber(fullPhoneNumber);
 
     if (user?.verified == false) {
       await this.usersRepo.update(user.id, { verified: true });
@@ -167,7 +193,7 @@ export class VerificationService {
 
       this.accessTokensRepository.save(accessToken);
 
-      user = await this.entityLookupService.findUserByMobileNumber(fullPhoneNumber) as User;
+      user = await this.entityLookupService.findUserByPhoneNumber(fullPhoneNumber) as User;
       user.apiToken = signedToken.token;
       user.refreshToken = signedToken.refresh;
 
@@ -189,11 +215,10 @@ export class VerificationService {
     return { complete: true };
   }
 
-  async resendMobileVerificationCode(dto: ResendPhoneCodeDto) {
+  async sendLoginCode(dto: PhoneDto) {
     dto.number = removeLeadingZero(dto.number);
     const fullPhoneNumber = `${dto.phoneCode}${dto.number}`;
-    const userPhone = await this.entityLookupService.findUserPhoneByPhoneNumber(fullPhoneNumber);
-    const code = await this.generatePhoneVerificationCode(userPhone?.id as UUID);
+    const code = await this.generateLoginVerificationCode(fullPhoneNumber);
     await this.whatsappService.sendText(process.env.WHATSAPP_NUMBER as string, `رمز التحقق الخاص بك هو: ${code.code}`);
     return { complete: true }
   }

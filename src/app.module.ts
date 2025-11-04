@@ -10,6 +10,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import jwtConfig from 'config/jwt.config';
 import { EntityLookupModule } from './modules/entity-lookup/entity-lookup.module';
 import { AwsModule } from './modules/aws/aws.module';
+import { LookupsModule } from './modules/lookups/lookups.module';
 import openai from 'config/openai.config';
 import awsConfig from 'config/aws.config';
 
@@ -46,6 +47,7 @@ const configurations = [
     JwtModule,
     EntityLookupModule,
     AwsModule,
+    LookupsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

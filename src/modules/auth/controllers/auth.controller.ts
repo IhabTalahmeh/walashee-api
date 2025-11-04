@@ -2,7 +2,7 @@ import { Body, Controller, Get, Post, Put, Req, Res, UseGuards, UsePipes, Valida
 import { AuthService } from '../services/auth.service';
 import { GoogleAuthGuard } from 'src/common/guards/google-oauth/google-oauth.guard';
 import { RegisterByEmailDto, RegisterByMobileDto } from '../dto/register.dto';
-import { LoginByEmailDto } from '../dto/login.dto';
+import { LoginByEmailDto, LoginByMobileDto } from '../dto/login.dto';
 import { JwtAuthGuard } from 'src/common/guard/jwt-auth.guard';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RefreshTokenDto } from '../dto/refresh-token.dto';
@@ -14,7 +14,7 @@ import { AddEmailDto } from '../dto/add-email.dto';
 import { PasswordService } from '../services/password.service';
 import { ForgotEmailPasswordDto } from '../dto/forgot-email-password.dto';
 import { SwitchRoleDto } from '../dto/switch-role.dto';
-import { ResendPhoneCodeDto } from '../dto/resent-mobile-code.dto';
+import { PhoneDto } from '../dto/phone.dto';
 import { VerifyPhoneDto } from '../dto/verify-mobile.dto';
 
 @UsePipes(new ValidationPipe({
@@ -95,6 +95,12 @@ export class AuthController {
         return this.authService.loginByEmail(loginDto);
     }
 
+    @Post('login/mobile')
+    @UsePipes(new ValidationPipe({ transform: true }))
+    loginByPhone(@Body() dto: LoginByMobileDto) {
+        return this.authService.loginByPhone(dto);
+    }
+
 
     // Password Endpoints
 
@@ -147,11 +153,11 @@ export class AuthController {
         return this.verificationService.resendEmailVerificationCode(dto)
     }
 
-    @Post('mobile/resend-code')
-    resendMobileVerificationCode(
-        @Body() dto: ResendPhoneCodeDto
+    @Post('mobile/send-login-code')
+    sendLoginCode(
+        @Body() dto: PhoneDto
     ) {
-        return this.verificationService.resendMobileVerificationCode(dto)
+        return this.verificationService.sendLoginCode(dto)
     }
 
     @Post('mobile/verify')

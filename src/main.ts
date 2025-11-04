@@ -25,10 +25,7 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   app.enableCors({
-    origin: [
-      'http://local.walashee.com:3000',
-      'http://192.168.1.139:3000',
-    ],
+    origin: true,
     credentials: true,
   })
 

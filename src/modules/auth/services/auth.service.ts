@@ -1,9 +1,9 @@
-import { ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, ConflictException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { RegisterByEmailDto, RegisterByMobileDto } from '../dto/register.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { MoreThan, Repository } from 'typeorm';
 import { UtilityService } from 'src/common/services/utility.service';
-import { LoginByEmailDto } from '../dto/login.dto';
+import { LoginByEmailDto, LoginByMobileDto } from '../dto/login.dto';
 import { AccessTokenGeneratorService } from './access-token-generator.service';
 import { AccessToken, User, UserEmail, UserPhone } from 'src/typeorm/entities';
 import { IUser } from 'src/common/interfaces';
@@ -18,6 +18,7 @@ import { VerificationService } from './verification.service';
 import { SwitchRoleDto } from '../dto/switch-role.dto';
 import { WhatsappService } from 'src/common/services/whatsapp.service';
 import { removeLeadingZero } from 'src/common/utils/utils';
+import { EVerificationPurpose } from 'src/common/enum/verification-purpose.enum';
 
 @Injectable()
 export class AuthService {
@@ -40,6 +41,9 @@ export class AuthService {
     @InjectRepository(UserPhone)
     private userPhoneRepo: Repository<UserPhone>,
 
+    @InjectRepository(User)
+    private usersRepo: Repository<User>,
+
     private accessTokenGenerator: AccessTokenGeneratorService,
     private verificationService: VerificationService,
 
@@ -51,36 +55,42 @@ export class AuthService {
     dto.number = removeLeadingZero(dto.number)
     const fullPhoneNumber = `${dto.phoneCode}${dto.number}`
 
-    const user = await this.entityLookupService.findUserByMobileNumber(fullPhoneNumber);
+    const userPhone = await this.entityLookupService.findUserPhoneByPhoneNumber(fullPhoneNumber);
 
-    if (user?.verified == false) {
-      const userPhone = await this.entityLookupService.findUserPhoneByPhoneNumber(fullPhoneNumber);
-      const code = await this.verificationService.generatePhoneVerificationCode(userPhone?.id as UUID);
+    if (!userPhone) {
+      const createdUser = this.usersRepository.create({
+        id: this.utility.generateUUID(),
+      });
+
+      const savedUser = await this.usersRepository.save(createdUser)
+      const country = await this.entityLookupService.findCountryByPhoneCode(dto.phoneCode);
+
+      const createdPhone = this.userPhoneRepo.create({
+        id: this.utility.generateUUID(),
+        user: savedUser,
+        phoneCode: dto.phoneCode,
+        number: dto.number,
+        fullPhoneNumber: `${fullPhoneNumber}`,
+        country: { id: country?.id },
+      });
+
+      const savedPhone = await this.userPhoneRepo.save(createdPhone);
+
+      const code = await this.verificationService.generateAccountVerificationCode(dto);
       await this.whatsappService.sendText(process.env.WHATSAPP_NUMBER as string, `رمز التحقق الخاص بك هو: ${code.code}`);
-    } else if (user?.verified) {
-      throw new ConflictException("Phone number is already used by another account.")
+
     }
 
-    const createdUser = this.usersRepository.create({
-      id: this.utility.generateUUID(),
-    });
+    if (userPhone?.status == EVerificationStatusType.VERIFIED) {
+      throw new ConflictException("Phone number is already used by another account");
+    }
 
-    const savedUser = await this.usersRepository.save(createdUser)
-    const country = await this.entityLookupService.findCountryByPhoneCode(dto.phoneCode);
+    if (userPhone?.status == EVerificationStatusType.NOT_VERIFIED) {
+      const code = await this.verificationService.generateAccountVerificationCode(dto);
+      await this.whatsappService.sendText(process.env.WHATSAPP_NUMBER as string, `رمز التحقق الخاص بك هو: ${code.code}`);
+    }
 
-    const createdPhone = this.userPhoneRepo.create({
-      id: this.utility.generateUUID(),
-      user: savedUser,
-      phoneCode: dto.phoneCode,
-      number: dto.number,
-      fullPhoneNumber: `${dto.phoneCode}${dto.number}`,
-      country: { id: country?.id },
-    });
-
-    const savedPhone = await this.userPhoneRepo.save(createdPhone);
-
-    const code = await this.verificationService.generatePhoneVerificationCode(savedPhone.id);
-    await this.whatsappService.sendText(process.env.WHATSAPP_NUMBER as string, `رمز التحقق الخاص بك هو: ${code.code}`);
+    return { complete: true };
   }
 
   async registerByEmail(dto: RegisterByEmailDto) {
@@ -191,6 +201,53 @@ export class AuthService {
 
     return instanceToPlain(user);
   }
+
+  async loginByPhone(dto: LoginByMobileDto) {
+    dto.number = removeLeadingZero(dto.number);
+    const fullPhoneNumber = `${dto.phoneCode}${dto.number}`;
+
+    const verificationCode = await this.verificationCodeRepo.findOne({
+      where: {
+        code: dto.code,
+        purpose: EVerificationPurpose.LOGIN,
+        type: EContactType.MOBILE,
+        phone: {
+          fullPhoneNumber: fullPhoneNumber,
+          status: EVerificationStatusType.VERIFIED,
+        },
+        expiresAt: MoreThan(new Date()),
+      },
+      relations: ['phone']
+    });
+
+    if (!verificationCode) throw new BadRequestException('Invalid verification code');
+
+    let user = await this.entityLookupService.findUserByPhoneNumber(fullPhoneNumber) as User;
+
+    if (user.verified == false) {
+      await this.usersRepo.update(user.id, { verified: true });
+    }
+
+    const signedToken = await this.accessTokenGenerator.generateAccessToken(
+      user.id,
+      user.role,
+    );
+
+    const accessToken = this.accessTokensRepository.create({
+      id: signedToken.id,
+      userId: user.id,
+      refreshToken: signedToken.refresh,
+    });
+
+    this.accessTokensRepository.save(accessToken);
+
+    user = await this.entityLookupService.findUserByPhoneNumber(fullPhoneNumber) as User;
+    user.apiToken = signedToken.token;
+    user.refreshToken = signedToken.refresh;
+
+    return instanceToPlain(user);
+  }
+
 
   async login(userId: UUID) {
     const user = await this.findById(userId);
