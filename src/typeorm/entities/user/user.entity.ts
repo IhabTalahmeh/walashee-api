@@ -36,6 +36,12 @@ export class User extends Timestamp {
 	fullName: string;
 
 	@Column({
+		type: 'date',
+		default: null,
+	})
+	dateOfBirth: Date;
+
+	@Column({
 		type: 'enum',
 		enum: EGender,
 		default: null,

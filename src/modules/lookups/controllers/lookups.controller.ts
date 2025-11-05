@@ -6,10 +6,15 @@ import { ERoleType } from 'src/common/enum';
 
 @Controller('lookups')
 export class LookupsController {
-	constructor(private lookupsService: LookupsService) {}
+	constructor(private lookupsService: LookupsService) { }
 
 	@Get('countries')
 	async getCountries() {
 		return await this.lookupsService.getCountries();
+	}
+
+	@Get('/genders')
+	async getGenders() {
+		return await this.lookupsService.getGenders();
 	}
 }

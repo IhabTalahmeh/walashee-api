@@ -74,7 +74,7 @@ export class AuthService {
         country: { id: country?.id },
       });
 
-      const savedPhone = await this.userPhoneRepo.save(createdPhone);
+      await this.userPhoneRepo.save(createdPhone);
 
       const code = await this.verificationService.generateAccountVerificationCode(dto);
       await this.whatsappService.sendText(process.env.WHATSAPP_NUMBER as string, `رمز التحقق الخاص بك هو: ${code.code}`);
@@ -90,7 +90,9 @@ export class AuthService {
       await this.whatsappService.sendText(process.env.WHATSAPP_NUMBER as string, `رمز التحقق الخاص بك هو: ${code.code}`);
     }
 
-    return { complete: true };
+    const user = await this.entityLookupService.findUserByPhoneNumber(fullPhoneNumber);
+
+    return instanceToPlain(user);
   }
 
   async registerByEmail(dto: RegisterByEmailDto) {

@@ -13,6 +13,7 @@ import { AwsModule } from './modules/aws/aws.module';
 import { LookupsModule } from './modules/lookups/lookups.module';
 import openai from 'config/openai.config';
 import awsConfig from 'config/aws.config';
+import { UsersModule } from './modules/users/users.module';
 
 const configurations = [
   database,
@@ -48,6 +49,7 @@ const configurations = [
     EntityLookupModule,
     AwsModule,
     LookupsModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [AppService],

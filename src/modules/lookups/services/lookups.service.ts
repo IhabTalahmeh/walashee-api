@@ -3,6 +3,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Country } from 'src/typeorm/entities';
 import { Repository } from 'typeorm';
 import * as https from 'https';
+import { GENDERS } from 'src/common/constants/constants';
+import { toTitleCase } from 'src/common/utils/utils';
 
 @Injectable()
 export class LookupsService {
@@ -15,6 +17,10 @@ export class LookupsService {
 	async getCountries() {
 		const data = await this.countriesRepository.find();
 		return { data };
+	}
+
+	async getGenders() {
+		return GENDERS;
 	}
 
 	async getLocation(ip: any) {
