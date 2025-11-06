@@ -6,7 +6,6 @@ import { LoginByEmailDto, LoginByMobileDto } from '../dto/login.dto';
 import { JwtAuthGuard } from 'src/common/guard/jwt-auth.guard';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { RefreshTokenDto } from '../dto/refresh-token.dto';
-import { IAccessTokenPayload } from 'src/common/types';
 import { VerificationService } from '../services/verification.service';
 import { VerifyEmailDto } from '../dto/verify-email.dto';
 import { ResendEmailCodeDto } from '../dto/resend-email-code.dto';
@@ -17,11 +16,7 @@ import { SwitchRoleDto } from '../dto/switch-role.dto';
 import { PhoneDto } from '../dto/phone.dto';
 import { VerifyPhoneDto } from '../dto/verify-mobile.dto';
 
-@UsePipes(new ValidationPipe({
-    transform: true,
-    whitelist: true,
-    forbidNonWhitelisted: true
-}))
+@UsePipes(new ValidationPipe({ transform: true }))
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
@@ -37,11 +32,10 @@ export class AuthController {
     @Put('token/refresh')
     @UseGuards(JwtAuthGuard)
     @ApiOperation({ description: 'Refresh the current access token' })
-    refreshAccessToken(@Req() req, @Body() data: RefreshTokenDto) {
-        const accessTokenPayload = req.user as IAccessTokenPayload;
-
+    refreshAccessToken(@Req() request, @Body() data: RefreshTokenDto) {
+        const userId = request.user;
         return this.authService.refreshAccessToken(
-            accessTokenPayload,
+            userId,
             data.refreshToken,
         );
     }

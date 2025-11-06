@@ -55,6 +55,13 @@ export class User extends Timestamp {
 	})
 	role: ERoleType;
 
+	@Column({
+		type: 'enum',
+		enum: ERoleType,
+		default: ERoleType.CUSTOMER
+	})
+	useAs: ERoleType;
+
 	@Column({ default: null })
 	avatar: string;
 

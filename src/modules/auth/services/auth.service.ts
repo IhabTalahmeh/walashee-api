@@ -167,7 +167,8 @@ export class AuthService {
     return {
       apiToken: refreshed.token,
       refreshToken: refreshed.refresh,
-      role: user.role
+      role: user.role,
+      useAs: user.useAs,
     };
   }
 

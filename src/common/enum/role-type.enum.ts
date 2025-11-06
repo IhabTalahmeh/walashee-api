@@ -1,6 +1,9 @@
 export enum ERoleType {
 	ADMIN = 'admin',
+	CUSTOMER = 'customer',
 	AGENT = 'agent',
+	DELIVERY_COMPANY = 'delivery_company',
 	DRIVER = 'driver',
-	CUSTOMER = 'customer'
+	SUPPLIER = 'supplier',
+	STORE_MANAGER = 'store_manager',
 }
