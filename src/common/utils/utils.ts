@@ -1,3 +1,5 @@
+import { PhoneDto } from "src/modules/auth/dto/phone.dto";
+
 export function removeLeadingZero(num: string) {
   let numStr = num.toString();
   if (numStr.charAt(0) === '0') {
@@ -12,4 +14,9 @@ export function toTitleCase(str: string) {
     .split(' ')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
+}
+
+export function getFullPhoneNumber(dto: PhoneDto) {
+  dto.number = removeLeadingZero(dto.number);
+  return `${dto.phoneCode}${dto.number}`;
 }

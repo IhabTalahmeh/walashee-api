@@ -14,6 +14,7 @@ import { LookupsModule } from './modules/lookups/lookups.module';
 import openai from 'config/openai.config';
 import awsConfig from 'config/aws.config';
 import { UsersModule } from './modules/users/users.module';
+import { AgentModule } from './modules/agent/agent.module';
 
 const configurations = [
   database,
@@ -50,6 +51,7 @@ const configurations = [
     AwsModule,
     LookupsModule,
     UsersModule,
+    AgentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

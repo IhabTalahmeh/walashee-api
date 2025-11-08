@@ -28,5 +28,6 @@ import { AwsModule } from '../aws/aws.module';
 	],
 	controllers: [UsersController],
 	providers: [UsersService, EntityLookupService, UtilityService],
+	exports: [TypeOrmModule],
 })
 export class UsersModule {}

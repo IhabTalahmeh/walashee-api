@@ -15,6 +15,7 @@ import { PasswordService } from './services/password.service';
 import { CloudfrontService } from '../aws/services/cloudfront.service';
 import { WhatsappService } from 'src/common/services/whatsapp.service';
 import { VerificationService } from './services/verification.service';
+import { Team } from 'src/typeorm/entities/common/team.entity';
 
 
 @Module({
@@ -30,6 +31,7 @@ import { VerificationService } from './services/verification.service';
       PasswordResetCode,
       Country,
       Company,
+      Team,
     ]),
   ],
   providers: [
@@ -45,6 +47,6 @@ import { VerificationService } from './services/verification.service';
     WhatsappService
   ],
   controllers: [AuthController],
-  exports: [JwtStrategy],
+  exports: [JwtStrategy, TypeOrmModule],
 })
 export class AuthModule { }

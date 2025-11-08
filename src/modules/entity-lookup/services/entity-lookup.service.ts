@@ -6,6 +6,7 @@ import { UserPhone } from "src/typeorm/entities";
 import { VerificationCode } from "src/typeorm/entities/auth/verification-code.entity";
 import { Address } from "src/typeorm/entities/common/address.entity";
 import { Country } from "src/typeorm/entities/common/county.entity";
+import { Team } from "src/typeorm/entities/common/team.entity";
 import { UserEmail } from "src/typeorm/entities/user/user-email.entity";
 import { User } from "src/typeorm/entities/user/user.entity";
 import { Repository } from "typeorm";
@@ -20,6 +21,7 @@ export class EntityLookupService {
     @InjectRepository(UserPhone) private userPhoneRepo: Repository<UserPhone>,
     @InjectRepository(Country) private countryRepo: Repository<Country>,
     @InjectRepository(VerificationCode) private verificationCodeRepo: Repository<VerificationCode>,
+    @InjectRepository(Team) private teamRepo: Repository<Team>,
   ) { }
 
   async findUserById(userId: UUID, relations: string[] = []) {
@@ -143,5 +145,32 @@ export class EntityLookupService {
       });
     }
     return null;
+  }
+
+  async findTeamByOwnerId(ownerId: UUID, relations = []) {
+    return await this.teamRepo.findOne({
+      where: {
+        owner: { id: ownerId },
+      },
+      relations,
+    });
+  }
+
+  async findTeamById(id: UUID, relations = []) {
+    return await this.teamRepo.findOne({
+      where: {
+        id,
+      },
+      relations,
+    });
+  }
+
+  async findUserTeams(userId: UUID, relations = []) {
+    return await this.teamRepo.find({
+      where: {
+        owner: {id: userId},
+      },
+      relations,
+    });
   }
 }

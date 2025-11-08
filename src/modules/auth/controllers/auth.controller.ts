@@ -29,6 +29,15 @@ export class AuthController {
 
     // Token Endpoints
 
+    @Get('me')
+    @UseGuards(JwtAuthGuard)
+    async getCurrentUser(
+        @Req() request,
+    ) {
+        const userId = request.user.sub;
+        return this.authService.getCurrentUser(userId);
+    }
+
     @Put('token/refresh')
     @UseGuards(JwtAuthGuard)
     @ApiOperation({ description: 'Refresh the current access token' })

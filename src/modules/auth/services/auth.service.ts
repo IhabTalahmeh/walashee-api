@@ -51,6 +51,11 @@ export class AuthService {
     private whatsappService: WhatsappService
   ) { }
 
+  async getCurrentUser(userId: UUID){
+    const user = await this.entityLookupService.findUserById(userId);
+    return instanceToPlain(user);
+  }
+
   async registerByMobile(dto: RegisterByMobileDto) {
     dto.number = removeLeadingZero(dto.number)
     const fullPhoneNumber = `${dto.phoneCode}${dto.number}`
