@@ -19,7 +19,11 @@ import { UsersService } from '../services/users.service';
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
 @UseInterceptors(ClassSerializerInterceptor)
-@UsePipes(new ValidationPipe({ transform: true }))
+@UsePipes(new ValidationPipe({
+	transform: true,
+	whitelist: true,
+	forbidNonWhitelisted: true
+}))
 export class UsersController {
 	constructor(private readonly usersService: UsersService) { }
 

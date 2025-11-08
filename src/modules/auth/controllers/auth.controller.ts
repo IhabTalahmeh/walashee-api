@@ -16,7 +16,11 @@ import { SwitchRoleDto } from '../dto/switch-role.dto';
 import { PhoneDto } from '../dto/phone.dto';
 import { VerifyPhoneDto } from '../dto/verify-mobile.dto';
 
-@UsePipes(new ValidationPipe({ transform: true }))
+@UsePipes(new ValidationPipe({
+    transform: true,
+    whitelist: true,
+    forbidNonWhitelisted: true
+}))
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
@@ -70,8 +74,7 @@ export class AuthController {
         return this.authService.registerByMobile(dto)
     }
 
-    @Post('register/email')
-    @UsePipes(new ValidationPipe({ transform: true }))
+    @Post('register/email')    
     registerByEmail(@Body() registerDto: RegisterByEmailDto) {
         return this.authService.registerByEmail(registerDto);
     }
@@ -93,13 +96,11 @@ export class AuthController {
     }
 
     @Post('login/email')
-    @UsePipes(new ValidationPipe({ transform: true }))
     loginByEmail(@Body() loginDto: LoginByEmailDto) {
         return this.authService.loginByEmail(loginDto);
     }
 
     @Post('login/mobile')
-    @UsePipes(new ValidationPipe({ transform: true }))
     loginByPhone(@Body() dto: LoginByMobileDto) {
         return this.authService.loginByPhone(dto);
     }

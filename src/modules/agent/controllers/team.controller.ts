@@ -10,7 +10,8 @@ import {
     ParseUUIDPipe,
     Req,
     ValidationPipe,
-    UsePipes
+    UsePipes,
+    Query
 } from "@nestjs/common";
 import type { UUID } from "crypto";
 import { JwtAuthGuard } from "src/common/guard/jwt-auth.guard";
@@ -20,10 +21,15 @@ import { CreateTeamDto } from "../dto/create-team.dto";
 import { Roles } from "src/common/decorators";
 import { ERoleType } from "src/common/enum";
 import { PhoneDto } from "src/modules/auth/dto/phone.dto";
+import { ListDto } from "src/common/dto";
 
 @UseGuards(JwtAuthGuard)
 @Roles(ERoleType.AGENT)
-@UsePipes(new ValidationPipe({ transform: true }))
+@UsePipes(new ValidationPipe({
+    transform: true,
+    whitelist: true,
+    forbidNonWhitelisted: true
+}))
 @Controller('agents/:agentId/teams')
 export class TeamController {
     constructor(
@@ -70,6 +76,16 @@ export class TeamController {
     ) {
         const userId = request.user.sub;
         return this.teamService.inviteAgentToTeam(userId, dto);
+    }
+
+    @Get(':teamId/invitations')
+    @UseGuards(EntityOwnerGuard)
+    async getTeamInvitations(
+        @Req() request,
+        @Query() listDto: ListDto
+    ) {
+        const userId = request.user.sub;
+        return this.teamService.getTeamInvitations(userId, listDto);
     }
 
     // Get all teams for an agent

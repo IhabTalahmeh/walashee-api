@@ -10,7 +10,8 @@ import { instanceToPlain } from "class-transformer";
 import { TeamInvitation } from "src/typeorm/entities/common/team-invitation.entity";
 import { EInvitationStatus, ETeamRole } from "src/common/enum";
 import { PhoneDto } from "src/modules/auth/dto/phone.dto";
-import { getFullPhoneNumber, removeLeadingZero } from "src/common/utils/utils";
+import { getFullPhoneNumber, getListDto, removeLeadingZero } from "src/common/utils/utils";
+import { ListDto } from "src/common/dto";
 
 
 
@@ -69,11 +70,17 @@ export class TeamService {
         const inviter = await this.entityLookupService.findUserById(inviterId);
 
         if (!invitee) {
-            throw new NotFoundException("Invitee not found");
+            throw new NotFoundException({
+                code: "no-accounts-related-to-phone-number",
+                message: "No account was found associated with this number",
+            });
         }
 
         if (inviterId == invitee?.id) {
-            throw new BadRequestException("You can't invite yourself");
+            throw new BadRequestException({
+                code: "you-cant-invite-yourself",
+                message: "You can't invite yourself",
+            });
         }
 
         const team = await this.teamInvitationRepo.findOne({
@@ -85,9 +92,15 @@ export class TeamService {
         });
 
         if (team?.status == EInvitationStatus.ACCEPTED) {
-            throw new ConflictException("Agent is alrady a member in your team");
-        } else if (team?.status == EInvitationStatus.PENDING) {
-            throw new ConflictException("Agent is already invited");
+            throw new ConflictException({
+                code: "agent-already-team-member",
+                message: "Agent is alrady a member in your team",
+            });
+        } else if (team?.status == EInvitationStatus.PENDING || team?.status == EInvitationStatus.IN_REVIEW) {
+            throw new ConflictException({
+                code: "agent-already-invited",
+                message: "Agent is already invited",
+            });
         }
 
         const created = this.teamInvitationRepo.create({
@@ -101,4 +114,11 @@ export class TeamService {
         const data = await this.teamInvitationRepo.save(created);
         return data;
     }
+
+    async getTeamInvitations(userId: UUID, listDto: ListDto) {
+        const { page, size } = getListDto(listDto);
+        console.log('page', page, 'size', size);
+    }
+
+
 }

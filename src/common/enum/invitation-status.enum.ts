@@ -1,4 +1,5 @@
 export enum EInvitationStatus {
     PENDING = 'pending',
-    ACCEPTED = 'accepted',    
+    ACCEPTED = 'accepted',
+    IN_REVIEW = 'in_review',
 }
