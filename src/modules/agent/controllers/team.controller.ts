@@ -22,6 +22,8 @@ import { Roles } from "src/common/decorators";
 import { ERoleType } from "src/common/enum";
 import { PhoneDto } from "src/modules/auth/dto/phone.dto";
 import { ListDto } from "src/common/dto";
+import { EInvitationType } from "src/common/enum/invitation-type.enum";
+import { TeamInvitationQueryDto } from "../dto/team-invitation-query.dto";
 
 @UseGuards(JwtAuthGuard)
 @Roles(ERoleType.AGENT)
@@ -82,11 +84,12 @@ export class TeamController {
     @UseGuards(EntityOwnerGuard)
     async getTeamInvitations(
         @Req() request,
-        @Query() listDto: ListDto
+        @Query() query: TeamInvitationQueryDto,
     ) {
         const userId = request.user.sub;
-        return this.teamService.getTeamInvitations(userId, listDto);
+        return this.teamService.getTeamInvitations(userId, query.type, query);
     }
+
 
     // Get all teams for an agent
     @Get()

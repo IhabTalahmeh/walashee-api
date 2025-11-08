@@ -4,14 +4,15 @@ import { CreateTeamDto } from "../dto/create-team.dto";
 import { EntityLookupService } from "src/modules/entity-lookup/services/entity-lookup.service";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Team } from "src/typeorm/entities/common/team.entity";
-import { Repository } from "typeorm";
+import { In, Repository } from "typeorm";
 import { UtilityService } from "src/common/services/utility.service";
 import { instanceToPlain } from "class-transformer";
 import { TeamInvitation } from "src/typeorm/entities/common/team-invitation.entity";
-import { EInvitationStatus, ETeamRole } from "src/common/enum";
+import { EInvitationStatus, ERoleType, ETeamRole } from "src/common/enum";
 import { PhoneDto } from "src/modules/auth/dto/phone.dto";
 import { getFullPhoneNumber, getListDto, removeLeadingZero } from "src/common/utils/utils";
 import { ListDto } from "src/common/dto";
+import { EInvitationType } from "src/common/enum/invitation-type.enum";
 
 
 
@@ -76,12 +77,19 @@ export class TeamService {
             });
         }
 
+        if(invitee.role !== ERoleType.CUSTOMER){
+            throw new BadRequestException({
+                code: "cant-send-invitation",
+                message: "You can't send this invitation",
+            });
+        }
+
         if (inviterId == invitee?.id) {
             throw new BadRequestException({
                 code: "you-cant-invite-yourself",
                 message: "You can't invite yourself",
             });
-        }
+        }        
 
         const team = await this.teamInvitationRepo.findOne({
             where: {
@@ -115,10 +123,33 @@ export class TeamService {
         return data;
     }
 
-    async getTeamInvitations(userId: UUID, listDto: ListDto) {
+    async getTeamInvitations(userId: UUID, type: EInvitationType, listDto: ListDto) {
         const { page, size } = getListDto(listDto);
-        console.log('page', page, 'size', size);
+
+        let whereCondition: any;
+
+        if (type === EInvitationType.SENT) {
+            whereCondition = { inviter: { id: userId } };
+        } else if (type === EInvitationType.RECEIVED) {
+            whereCondition = { invitee: { id: userId } };
+        } else {
+            // Return both sent and received invitations
+            whereCondition = [
+                { inviter: { id: userId } },
+                { invitee: { id: userId } },
+            ];
+        }
+        
+        const invitations = await this.teamInvitationRepo.find({
+            where: whereCondition,
+            relations: ['inviter', 'invitee'],
+            skip: page,
+            take: size,
+        });
+
+        return instanceToPlain(invitations);
     }
+
 
 
 }
