@@ -13,6 +13,9 @@ import { PhoneDto } from "src/modules/auth/dto/phone.dto";
 import { getFullPhoneNumber, getListDto, removeLeadingZero } from "src/common/utils/utils";
 import { ListDto } from "src/common/dto";
 import { EInvitationType } from "src/common/enum/invitation-type.enum";
+import { AwsService } from "src/modules/aws/services/aws.service";
+import { AWSHelper } from "src/common/services/aws-helper.service";
+import { CloudfrontService } from "src/modules/aws/services/cloudfront.service";
 
 
 
@@ -25,7 +28,8 @@ export class TeamService {
         @InjectRepository(TeamInvitation)
         private teamInvitationRepo: Repository<TeamInvitation>,
 
-
+        private cloudfrontService: CloudfrontService,
+        private awsHelper: AWSHelper,
         private entityLookupService: EntityLookupService,
         private utility: UtilityService,
     ) { }
@@ -38,8 +42,9 @@ export class TeamService {
         return null;
     }
 
-    async createTeam(ownerId: UUID, dto: CreateTeamDto) {
+    async createTeam(ownerId: UUID, file: Buffer | null, dto: CreateTeamDto) {
         const team = await this.entityLookupService.findTeamByOwnerId(ownerId);
+        const avatar = file ? `${Date.now()}.jpg` : undefined;
 
         if (team) {
             throw new ConflictException({
@@ -52,9 +57,14 @@ export class TeamService {
             id: this.utility.generateUUID(),
             name: dto.name,
             owner: { id: ownerId },
+            avatar,
         });
 
         const saved = await this.teamRepo.save(created);
+
+        if (file && avatar) {
+            await this.awsHelper.uploadTeamAvatar(saved.id, file, avatar)
+        }
 
         return saved;
     }
@@ -66,6 +76,9 @@ export class TeamService {
 
     async getTeamById(teamId: UUID) {
         const team = await this.entityLookupService.findTeamById(teamId);
+        if (team) {
+            team.avatar = await this.cloudfrontService._getSignedUrl(`teams/${teamId}/avatar/small_${team.avatar}`);
+        }
         return instanceToPlain(team);
     }
 

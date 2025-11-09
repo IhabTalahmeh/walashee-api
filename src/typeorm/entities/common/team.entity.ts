@@ -18,4 +18,7 @@ export class Team extends Timestamp {
     @Column()
     name: string;
 
+    @Column({ default: null })
+    avatar: string;
+
 }

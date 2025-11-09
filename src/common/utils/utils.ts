@@ -1,5 +1,6 @@
 import { PhoneDto } from "src/modules/auth/dto/phone.dto";
 import { ListDto } from "../dto";
+const sharp = require('sharp');
 
 export function removeLeadingZero(num: string) {
   let numStr = num.toString();
@@ -27,4 +28,22 @@ export function getListDto(dto: ListDto) {
   const size = dto.size;
 
   return { page, size };
+}
+
+export const compressImage = async (fileBuffer: Buffer, size = 2048, quality = 80) => {
+  try {
+    const compressedBuffer = await sharp(fileBuffer)
+      .resize({
+        width: size,
+        height: size,
+        fit: sharp.fit.inside,
+        withoutEnlargement: true,
+      })
+      .jpeg({ quality: quality })
+      .toBuffer();
+    return compressedBuffer;
+  } catch (error) {
+    console.error('Error compressing image:', error);
+    throw error;
+  }
 }

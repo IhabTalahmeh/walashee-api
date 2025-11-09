@@ -11,7 +11,9 @@ import {
     Req,
     ValidationPipe,
     UsePipes,
-    Query
+    Query,
+    UseInterceptors,
+    UploadedFile
 } from "@nestjs/common";
 import type { UUID } from "crypto";
 import { JwtAuthGuard } from "src/common/guard/jwt-auth.guard";
@@ -21,9 +23,10 @@ import { CreateTeamDto } from "../dto/create-team.dto";
 import { Roles } from "src/common/decorators";
 import { ERoleType } from "src/common/enum";
 import { PhoneDto } from "src/modules/auth/dto/phone.dto";
-import { ListDto } from "src/common/dto";
-import { EInvitationType } from "src/common/enum/invitation-type.enum";
+import { FileInterceptor } from '@nestjs/platform-express';
 import { TeamInvitationQueryDto } from "../dto/team-invitation-query.dto";
+import { ImageValidationPipe } from "src/common/validators/image.validator";
+import { UtilityService } from "src/common/services/utility.service";
 
 @UseGuards(JwtAuthGuard)
 @Roles(ERoleType.AGENT)
@@ -51,12 +54,15 @@ export class TeamController {
     // Create a new team for an agent
     @Post()
     @UseGuards(EntityOwnerGuard)
+    @UseInterceptors(FileInterceptor('file'))
     async createTeam(
         @Req() request,
+        @UploadedFile(ImageValidationPipe) file: Express.Multer.File,
         @Body() body: CreateTeamDto,
     ) {
         const userId = request.user.sub;
-        return this.teamService.createTeam(userId, body);
+        const avatar = file?.buffer ? file.buffer : null;
+        return this.teamService.createTeam(userId, avatar, body);
     }
 
     @Get(':teamId')

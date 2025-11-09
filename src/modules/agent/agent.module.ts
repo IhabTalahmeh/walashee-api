@@ -9,6 +9,7 @@ import { UtilityService } from 'src/common/services/utility.service';
 import { AwsModule } from '../aws/aws.module';
 import { TeamController } from './controllers/team.controller';
 import { TeamService } from './services/team.service';
+import { AWSHelper } from 'src/common/services/aws-helper.service';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { TeamService } from './services/team.service';
     AgentService,
     UtilityService,
     TeamService,
+    AWSHelper,
   ],
   controllers: [
     AgentController,
