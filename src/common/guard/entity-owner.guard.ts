@@ -21,7 +21,6 @@ export class EntityOwnerGuard implements CanActivate {
     if (teamId) {
       const team = await this.entityLookupService.findTeamById(teamId);
       if (!team) throw new NotFoundException(`Team not found`);
-      console.log('team', team)
       if (team.owner.id !== user.sub)
         throw new UnauthorizedException(`Team is not yours`);
     }

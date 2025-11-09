@@ -91,32 +91,13 @@ export class TeamController {
     }
 
 
-    // Get all teams for an agent
-    @Get()
-    async getTeams(
-        @Param('agentId') agentId: UUID,
-    ) {
-        // return this.teamService.getTeams(agentId);
-    }
-
-    // Get a specific team
-    @Get(':teamId')
-    async getTeam(
-        @Param('agentId') agentId: UUID,
-        @Param('teamId') teamId: UUID,
-    ) {
-        // return this.teamService.getTeam(agentId, teamId);
-    }
-
-    // Update a team
     @Patch(':teamId')
     @UseGuards(EntityOwnerGuard)
     async updateTeam(
-        @Param('agentId') agentId: UUID,
         @Param('teamId') teamId: UUID,
-        @Body() body: any,
+        @Body() dto: CreateTeamDto,
     ) {
-        // return this.teamService.updateTeam(agentId, teamId, body);
+        return this.teamService.updateTeam(teamId, dto);
     }
 
     // Delete a team

@@ -59,6 +59,11 @@ export class TeamService {
         return saved;
     }
 
+    async updateTeam(teamId: UUID, dto: CreateTeamDto) {
+        const team = await this.teamRepo.update(teamId, dto);
+        return instanceToPlain(team);
+    }
+
     async getTeamById(teamId: UUID) {
         const team = await this.entityLookupService.findTeamById(teamId);
         return instanceToPlain(team);
@@ -77,19 +82,12 @@ export class TeamService {
             });
         }
 
-        if(invitee.role !== ERoleType.CUSTOMER){
+        if (invitee.role !== ERoleType.CUSTOMER) {
             throw new BadRequestException({
                 code: "cant-send-invitation",
                 message: "You can't send this invitation",
             });
         }
-
-        if (inviterId == invitee?.id) {
-            throw new BadRequestException({
-                code: "you-cant-invite-yourself",
-                message: "You can't invite yourself",
-            });
-        }        
 
         const team = await this.teamInvitationRepo.findOne({
             where: {
@@ -139,7 +137,7 @@ export class TeamService {
                 { invitee: { id: userId } },
             ];
         }
-        
+
         const invitations = await this.teamInvitationRepo.find({
             where: whereCondition,
             relations: ['inviter', 'invitee'],
