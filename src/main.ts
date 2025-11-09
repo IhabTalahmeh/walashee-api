@@ -1,9 +1,21 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { DocumentBuilder, SwaggerDocumentOptions, SwaggerModule } from '@nestjs/swagger';
+import * as admin from 'firebase-admin';
+import { ConfigService } from '@nestjs/config';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+	const configService = app.get(ConfigService);
+
+  const fcmConfig = configService.get('fcm');
+  admin.initializeApp({
+    credential: admin.credential.cert({
+      projectId: fcmConfig.projectId,
+      privateKey: fcmConfig.privateKey,
+      clientEmail: fcmConfig.clientEmail,
+    }),
+  });
 
   app.use((req, res, next) => {
     res.header('Content-Type', 'application/json; charset=utf-8');

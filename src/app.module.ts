@@ -15,13 +15,16 @@ import openai from 'config/openai.config';
 import awsConfig from 'config/aws.config';
 import { UsersModule } from './modules/users/users.module';
 import { AgentModule } from './modules/agent/agent.module';
+import fcmConfig from 'config/fcm.config';
+import { FcmModule } from './modules/fcm/fcm.module';
 
 const configurations = [
   database,
   googleOauthConfig,
   jwtConfig,
   awsConfig,
-  openai
+  openai,
+  fcmConfig,
 ];
 
 @Module({
@@ -52,6 +55,7 @@ const configurations = [
     LookupsModule,
     UsersModule,
     AgentModule,
+    FcmModule,
   ],
   controllers: [AppController],
   providers: [AppService],
