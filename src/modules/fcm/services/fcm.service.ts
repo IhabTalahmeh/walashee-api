@@ -78,6 +78,27 @@ export class FCMService {
 		}
 	}
 
+	async sendTeamInvitationNotification(userId: UUID) {
+		const fcmTokens = await this.fcmRepository.find({
+			where: { userId: userId },
+		});
+		const tokens = fcmTokens.map((item) => item.token);
+
+		for (const token of tokens) {
+			const dataPayload = {
+				title: 'test',
+				bodyEn: `Hello world`,
+				bodyAr: `مرحبا بالعالم`,
+				type: 'app',
+				screen: 'CU_Main',
+				params: JSON.stringify({}),
+				event: 'on-join-request',
+			};
+
+			await this.sendPushNotification(token, dataPayload);
+		}
+	}
+
 	async testNotification(userId: UUID) {
 		const fcmTokens = await this.fcmRepository.find({
 			where: { userId: userId },

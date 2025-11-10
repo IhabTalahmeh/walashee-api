@@ -1,11 +1,13 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import type { UUID } from "crypto";
+import { EInvitationStatus } from "src/common/enum";
 import { EVerificationStatusType } from "src/common/enum/verification-status.enum";
 import { UserPhone } from "src/typeorm/entities";
 import { VerificationCode } from "src/typeorm/entities/auth/verification-code.entity";
 import { Address } from "src/typeorm/entities/common/address.entity";
 import { Country } from "src/typeorm/entities/common/county.entity";
+import { TeamInvitation } from "src/typeorm/entities/common/team-invitation.entity";
 import { Team } from "src/typeorm/entities/common/team.entity";
 import { UserEmail } from "src/typeorm/entities/user/user-email.entity";
 import { User } from "src/typeorm/entities/user/user.entity";
@@ -22,6 +24,7 @@ export class EntityLookupService {
     @InjectRepository(Country) private countryRepo: Repository<Country>,
     @InjectRepository(VerificationCode) private verificationCodeRepo: Repository<VerificationCode>,
     @InjectRepository(Team) private teamRepo: Repository<Team>,
+    @InjectRepository(TeamInvitation) private teamInvitationRepo: Repository<TeamInvitation>,
   ) { }
 
   async findUserById(userId: UUID, relations: string[] = []) {
@@ -168,7 +171,27 @@ export class EntityLookupService {
   async findUserTeams(userId: UUID, relations = []) {
     return await this.teamRepo.find({
       where: {
-        owner: {id: userId},
+        owner: { id: userId },
+      },
+      relations,
+    });
+  }
+
+  async findPrimaryUserPhoneByUserId(userId: UUID, relations = []) {
+    return await this.userPhoneRepo.findOne({
+      where: {
+        user: { id: userId },
+        status: EVerificationStatusType.VERIFIED,
+      },
+      relations,
+    });
+  }
+
+  async findPendingTeamInvitatinById(invitationId: UUID, relations: string[] = []) {
+    return await this.teamInvitationRepo.findOne({
+      where: {
+        id: invitationId,
+        status: EInvitationStatus.PENDING,
       },
       relations,
     });

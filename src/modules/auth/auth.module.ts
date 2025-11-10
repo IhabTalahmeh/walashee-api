@@ -16,6 +16,7 @@ import { CloudfrontService } from '../aws/services/cloudfront.service';
 import { WhatsappService } from 'src/common/services/whatsapp.service';
 import { VerificationService } from './services/verification.service';
 import { Team } from 'src/typeorm/entities/common/team.entity';
+import { TeamInvitation } from 'src/typeorm/entities/common/team-invitation.entity';
 
 
 @Module({
@@ -32,6 +33,7 @@ import { Team } from 'src/typeorm/entities/common/team.entity';
       Country,
       Company,
       Team,
+      TeamInvitation,
     ]),
   ],
   providers: [

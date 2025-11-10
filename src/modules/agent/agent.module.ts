@@ -10,6 +10,7 @@ import { AwsModule } from '../aws/aws.module';
 import { TeamController } from './controllers/team.controller';
 import { TeamService } from './services/team.service';
 import { AWSHelper } from 'src/common/services/aws-helper.service';
+import { FcmModule } from '../fcm/fcm.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { AWSHelper } from 'src/common/services/aws-helper.service';
     EntityLookupModule,
     UsersModule,
     AwsModule,
+    FcmModule,
   ],
   providers: [
     AgentService,

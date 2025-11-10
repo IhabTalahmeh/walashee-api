@@ -106,13 +106,14 @@ export class TeamController {
         return this.teamService.updateTeam(teamId, dto);
     }
 
-    // Delete a team
-    @Delete(':teamId')
+    // Cancel invitation
+    @Delete(':teamId/invitations/:invitationId')
     @UseGuards(EntityOwnerGuard)
     async deleteTeam(
-        @Param('agentId') agentId: UUID,
-        @Param('teamId') teamId: UUID,
+        @Req() request,
+        @Param('invitationId') invitationId: UUID,
     ) {
-        // return this.teamService.deleteTeam(agentId, teamId);
+        const userId = request.user.sub;
+        return this.teamService.cancelTeamInvitation(userId, invitationId);
     }
 }

@@ -51,7 +51,7 @@ export class AuthService {
     private whatsappService: WhatsappService
   ) { }
 
-  async getCurrentUser(userId: UUID){
+  async getCurrentUser(userId: UUID) {
     const user = await this.entityLookupService.findUserById(userId);
     return instanceToPlain(user);
   }

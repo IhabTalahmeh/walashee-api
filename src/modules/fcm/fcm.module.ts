@@ -14,5 +14,6 @@ import { AwsModule } from '../aws/aws.module';
 	],
 	providers: [FCMService, UtilityService],
 	controllers: [FcmController],
+	exports: [FCMService]
 })
 export class FcmModule {}
