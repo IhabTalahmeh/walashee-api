@@ -84,7 +84,7 @@ export class TeamService {
     return instanceToPlain(team);
   }
 
-  async inviteAgentToTeam(inviterId: UUID, dto: PhoneDto) {
+  async inviteAgentToTeam(inviterId: UUID, dto: PhoneDto, lang: string) {
 
     const fullPhoneNumber = getFullPhoneNumber(dto);
     const invitee = await this.entityLookupService.findUserByPhoneNumber(fullPhoneNumber);
@@ -134,7 +134,7 @@ export class TeamService {
 
     const saved = await this.teamInvitationRepo.save(created);
 
-    await this.fcmService.sendTeamInvitationNotification(saved.id);
+    await this.fcmService.sendTeamInvitationNotification(saved.id, lang);
     return saved;
   }
 

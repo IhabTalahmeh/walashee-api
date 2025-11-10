@@ -17,6 +17,9 @@ import { UsersModule } from './modules/users/users.module';
 import { AgentModule } from './modules/agent/agent.module';
 import fcmConfig from 'config/fcm.config';
 import { FcmModule } from './modules/fcm/fcm.module';
+import { I18nModule, QueryResolver, AcceptLanguageResolver, HeaderResolver } from 'nestjs-i18n';
+import * as path from 'path';
+import { existsSync } from 'fs';
 
 const configurations = [
   database,
@@ -29,6 +32,18 @@ const configurations = [
 
 @Module({
   imports: [
+    I18nModule.forRoot({
+      fallbackLanguage: 'en',
+      loaderOptions: {
+        path: path.join(__dirname, '../i18n/'),
+        watch: true,
+      },
+      resolvers: [
+        { use: QueryResolver, options: ['lang'] },
+        AcceptLanguageResolver,
+        new HeaderResolver(['x-lang']),
+      ],
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
       load: configurations,

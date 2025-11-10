@@ -27,6 +27,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { TeamInvitationQueryDto } from "../dto/team-invitation-query.dto";
 import { ImageValidationPipe } from "src/common/validators/image.validator";
 import { UtilityService } from "src/common/services/utility.service";
+import { I18nLang } from "nestjs-i18n";
 
 @UseGuards(JwtAuthGuard)
 @Roles(ERoleType.AGENT)
@@ -81,9 +82,10 @@ export class TeamController {
     async inviteAgentToTeam(
         @Req() request,
         @Body() dto: PhoneDto,
+        @I18nLang() lang: string
     ) {
         const userId = request.user.sub;
-        return this.teamService.inviteAgentToTeam(userId, dto);
+        return this.teamService.inviteAgentToTeam(userId, dto, lang);
     }
 
     @Get(':teamId/invitations')

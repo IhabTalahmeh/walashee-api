@@ -10,6 +10,7 @@ import { ENotificationType, ERoleType } from 'src/common/enum';
 import { Notification } from 'src/typeorm/entities';
 import { instanceToPlain } from 'class-transformer';
 import { EntityLookupService } from 'src/modules/entity-lookup/services/entity-lookup.service';
+import { I18nService } from 'nestjs-i18n';
 
 @Injectable()
 export class FCMService {
@@ -22,6 +23,7 @@ export class FCMService {
 
 		private entityLookupService: EntityLookupService,
 		private utility: UtilityService,
+		private i18n: I18nService,
 	) { }
 
 	async registerForNotifications(
@@ -85,7 +87,7 @@ export class FCMService {
 		}
 	}
 
-	async sendTeamInvitationNotification(invitationId: UUID) {
+	async sendTeamInvitationNotification(invitationId: UUID, lang: string) {
 
 		const invitation = await this.entityLookupService.findPendingTeamInvitatinById(invitationId, ['inviter', 'invitee']);
 
@@ -95,7 +97,7 @@ export class FCMService {
 				message: "Invitation with this id does not exist",
 			})
 		}
-		
+
 		const fcmToken = await this.fcmRepository.findOne({
 			where: { userId: invitation.invitee.id },
 		});
@@ -104,11 +106,11 @@ export class FCMService {
 			type: ENotificationType.TEAM_INVITATION,
 			screen: 'NotificationsScreen',
 			params: {},
-			titleAr: 'مرحبا',
-			titleEn: 'hello',
+			titleAr: this.i18n.t('test.hello', { lang: 'ar' }),
+			titleEn: this.i18n.t('test.hello', { lang: 'en' }),
 			event: '',
-			messageAr: 'هذا اشعار باللغة العربية',
-			messageEn: 'This is a notification in english',
+			messageAr: `قام ${invitation.inviter.fullName} بدعوتك للإنضمام إلى فريقه كـ ${invitation.as}.`,
+			messageEn: `${invitation.inviter.fullName} sent you a request to join their team as ${invitation.as}`,
 		});
 
 		if (fcmToken) {

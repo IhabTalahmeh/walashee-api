@@ -22,14 +22,6 @@ import { ERoleType } from 'src/common/enum';
 export class FcmController {
 	constructor(private fcmService: FCMService) {}
 
-	@Get('test')
-	async getTestNotification(
-		@Req() request,
-	){
-		const userId = request.user.sub;
-		return this.fcmService.sendTeamInvitationNotification(userId);
-	}
-
 	@Post('register')
 	registerForNotifications(
 		@Req() request,
