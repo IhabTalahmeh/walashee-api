@@ -6,3 +6,4 @@ export * from './language-code.enum';
 export * from './identification-type.enum';
 export * from './team-role.enum';
 export * from './invitation-status.enum';
+export * from './notification-type.enum';

@@ -27,7 +27,7 @@ export class FcmController {
 		@Req() request,
 	){
 		const userId = request.user.sub;
-		return this.fcmService.testNotification(userId);
+		return this.fcmService.sendTeamInvitationNotification(userId);
 	}
 
 	@Post('register')

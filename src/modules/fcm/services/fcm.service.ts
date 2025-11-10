@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import * as admin from 'firebase-admin';
 import { RegisterFCMDto } from '../dto/register.dto';
 import { UUID } from 'crypto';
@@ -6,7 +6,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { FCMToken } from 'src/typeorm/entities/auth/fcm-tokens.entity';
 import { In, Repository } from 'typeorm';
 import { UtilityService } from 'src/common/services/utility.service';
-import { ERoleType } from 'src/common/enum';
+import { ENotificationType, ERoleType } from 'src/common/enum';
+import { Notification } from 'src/typeorm/entities';
+import { instanceToPlain } from 'class-transformer';
+import { EntityLookupService } from 'src/modules/entity-lookup/services/entity-lookup.service';
 
 @Injectable()
 export class FCMService {
@@ -14,6 +17,10 @@ export class FCMService {
 		@InjectRepository(FCMToken)
 		private fcmRepository: Repository<FCMToken>,
 
+		@InjectRepository(Notification)
+		private notificationRepo: Repository<Notification>,
+
+		private entityLookupService: EntityLookupService,
 		private utility: UtilityService,
 	) { }
 
@@ -78,46 +85,46 @@ export class FCMService {
 		}
 	}
 
-	async sendTeamInvitationNotification(userId: UUID) {
-		const fcmTokens = await this.fcmRepository.find({
-			where: { userId: userId },
-		});
-		const tokens = fcmTokens.map((item) => item.token);
+	async sendTeamInvitationNotification(invitationId: UUID) {
 
-		for (const token of tokens) {
-			const dataPayload = {
-				title: 'test',
-				bodyEn: `Hello world`,
-				bodyAr: `مرحبا بالعالم`,
-				type: 'app',
-				screen: 'CU_Main',
-				params: JSON.stringify({}),
-				event: 'on-join-request',
-			};
+		const invitation = await this.entityLookupService.findPendingTeamInvitatinById(invitationId, ['inviter', 'invitee']);
 
-			await this.sendPushNotification(token, dataPayload);
+		if (!invitation) {
+			throw new NotFoundException({
+				code: "invitation-not-found",
+				message: "Invitation with this id does not exist",
+			})
 		}
-	}
-
-	async testNotification(userId: UUID) {
-		const fcmTokens = await this.fcmRepository.find({
-			where: { userId: userId },
+		
+		const fcmToken = await this.fcmRepository.findOne({
+			where: { userId: invitation.invitee.id },
 		});
-		const tokens = fcmTokens.map((item) => item.token);
 
-		for (const token of tokens) {
-			const dataPayload = {
-				title: 'test',
-				bodyEn: `Hello world`,
-				bodyAr: `مرحبا بالعالم`,
-				type: 'app',
-				screen: 'CU_Main',
-				params: JSON.stringify({}),
-				event: 'on-join-request',
-			};
+		const payload = this.utility.buildNotificationPayload({
+			type: ENotificationType.TEAM_INVITATION,
+			screen: 'NotificationsScreen',
+			params: {},
+			titleAr: 'مرحبا',
+			titleEn: 'hello',
+			event: '',
+			messageAr: 'هذا اشعار باللغة العربية',
+			messageEn: 'This is a notification in english',
+		});
 
-			await this.sendPushNotification(token, dataPayload);
+		if (fcmToken) {
+			await this.sendPushNotification(fcmToken.token, payload);
 		}
+
+		const created = this.notificationRepo.create({
+			id: this.utility.generateUUID(),
+			user: { id: invitation.invitee.id },
+			...payload,
+			params: payload.params ? JSON.parse(payload.params) : null,
+		});
+
+		const saved = await this.notificationRepo.save(created);
+
+		return instanceToPlain(saved);
 	}
 
 }

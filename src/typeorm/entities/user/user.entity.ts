@@ -15,6 +15,7 @@ import { UserEmail } from './user-email.entity';
 import { UserPhone } from './user-phone.entity';
 import { EGender } from 'src/common/enum/gender.enum';
 import { ELanguageCode } from 'src/common/enum';
+import { Notification } from 'src/typeorm/entities';
 
 @Entity('users')
 export class User extends Timestamp {
@@ -77,6 +78,9 @@ export class User extends Timestamp {
 		default: false,
 	})
 	verified: boolean;
+
+	@OneToMany(() => Notification, (notification) => notification.user)
+	notifications: Notification[];
 
 	apiToken: string;
 	refreshToken: string;

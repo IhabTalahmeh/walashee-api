@@ -11,6 +11,6 @@ export * from './common/location.entity';
 export * from './common/contact.entity';
 export * from './common/county.entity';
 export * from './common/company.entity';
-
+export * from './common/notification.entity';
 
 export * from './auth/reset-password-codes.entity';

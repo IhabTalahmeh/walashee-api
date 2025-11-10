@@ -9,6 +9,7 @@ import { ListDto } from '../dto/list.dto';
 
 import axios from 'axios';
 import { CloudfrontService } from 'src/modules/aws/services/cloudfront.service';
+import { INotification } from '../interfaces';
 
 @Injectable()
 export class UtilityService {
@@ -87,5 +88,20 @@ export class UtilityService {
 			xlarge: await this.cloudfrontService._getSignedUrl(`product-items/${productId}/avatar/xlarge_${fileName}`),
 		}
 	}
+
+	public buildNotificationPayload({ type, screen, params, titleAr, titleEn, messageAr, messageEn, event }: INotification) {
+		return {
+			type,
+			screen,
+			params: JSON.stringify(params || {}),
+			titleAr,
+			titleEn,
+			messageAr,
+			messageEn,
+			event,
+			deeplink: `walashee://${screen}`,
+		};
+	}
+
 
 }

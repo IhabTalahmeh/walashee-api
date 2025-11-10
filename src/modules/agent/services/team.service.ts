@@ -134,7 +134,7 @@ export class TeamService {
 
     const saved = await this.teamInvitationRepo.save(created);
 
-    await this.fcmService.sendTeamInvitationNotification(invitee.id);
+    await this.fcmService.sendTeamInvitationNotification(saved.id);
     return saved;
   }
 
