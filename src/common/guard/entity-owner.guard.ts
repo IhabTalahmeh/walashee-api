@@ -12,7 +12,6 @@ export class EntityOwnerGuard implements CanActivate {
     const { agentId, teamId, customerId } = params;
 
     if (customerId) {
-      console.log('user.sub', user.sub)
       const customr = await this.entityLookupService.findUserById(agentId);
       if (!customr) throw new NotFoundException(`Custoemr ${customerId} not found`);
       if (customerId !== user.sub) {

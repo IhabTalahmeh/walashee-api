@@ -66,6 +66,7 @@ export class User extends Timestamp {
 	})
 	useAs: ERoleType;
 
+	@Exclude()
 	@Column({ default: null })
 	avatar: string;
 

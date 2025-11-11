@@ -42,20 +42,14 @@ export class UsersService {
 			throw new NotFoundException();
 		}
 
-		console.log(file, avatar);
-
 		if (file && avatar) {
 			await this.awsHelper.uploadAvatar(`users/${user.id}/avatar`, file, avatar)
 		}
 
-		console.log('dto', dto);
-
 		await this.usersRepo.update(userId, { ...dto, avatar });
 
 		user = await this.entityLookupService.findUserById(userId);
-
-		console.log('avatar')
-
+		
 		return instanceToPlain(user);
 	}
 

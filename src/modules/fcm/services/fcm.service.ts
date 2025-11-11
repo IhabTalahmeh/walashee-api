@@ -104,7 +104,7 @@ export class FCMService {
 
 		const payload = this.utility.buildNotificationPayload({
 			type: ENotificationType.TEAM_INVITATION,
-			screen: 'NotificationsScreen',
+			screen: 'InvitationsScreen',
 			params: {},
 			titleAr: this.i18n.t('test.title', { lang: 'ar' }),
 			titleEn: this.i18n.t('test.title', { lang: 'en' }),

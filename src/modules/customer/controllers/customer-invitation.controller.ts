@@ -6,6 +6,7 @@ import { Roles } from "src/common/decorators";
 import { ERoleType } from "src/common/enum";
 import { JwtAuthGuard } from "src/common/guard/jwt-auth.guard";
 import type { UUID } from "crypto";
+import { TeamInvitationQueryDto } from "src/modules/agent/dto/team-invitation-query.dto";
 
 @UseGuards(JwtAuthGuard, EntityOwnerGuard)
 @Roles(ERoleType.CUSTOMER)
@@ -24,9 +25,8 @@ export class CustomerInvitationController {
     @Get()    
     async getTeamInvitations(
         @Param('customerId') customerId: UUID,
-        @Query() query: ListDto,
+        @Query() query: TeamInvitationQueryDto,
     ) {
-        console.log('customer id', customerId);
         return this.customerInvitationService.getTeamInvitations(customerId, query);
     }
 
