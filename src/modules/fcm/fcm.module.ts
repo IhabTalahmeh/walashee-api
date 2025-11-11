@@ -8,6 +8,7 @@ import { UtilityService } from 'src/common/services/utility.service';
 import { AwsModule } from '../aws/aws.module';
 import { UsersModule } from '../users/users.module';
 import { EntityLookupModule } from '../entity-lookup/entity-lookup.module';
+import { NotificationModule } from '../notification/notification.module';
 
 @Module({
 	imports: [
@@ -15,6 +16,7 @@ import { EntityLookupModule } from '../entity-lookup/entity-lookup.module';
 		AwsModule,
 		UsersModule,
 		EntityLookupModule,
+		NotificationModule,
 	],
 	providers: [FCMService, UtilityService],
 	controllers: [FcmController],

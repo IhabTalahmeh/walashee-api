@@ -19,7 +19,7 @@ import fcmConfig from 'config/fcm.config';
 import { FcmModule } from './modules/fcm/fcm.module';
 import { I18nModule, QueryResolver, AcceptLanguageResolver, HeaderResolver } from 'nestjs-i18n';
 import * as path from 'path';
-import { existsSync } from 'fs';
+import { NotificationModule } from './modules/notification/notification.module';
 
 const configurations = [
   database,
@@ -71,6 +71,7 @@ const configurations = [
     UsersModule,
     AgentModule,
     FcmModule,
+    NotificationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

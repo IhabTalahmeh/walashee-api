@@ -21,7 +21,6 @@ import { AwsModule } from '../aws/aws.module';
 			UserPhone,
 			Country,
 			VerificationCode,
-			Notification,
 		]),
 		AuthModule,
 		AwsModule,
