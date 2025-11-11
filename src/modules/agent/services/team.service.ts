@@ -79,6 +79,7 @@ export class TeamService {
   async getTeamById(teamId: UUID) {
     const team = await this.entityLookupService.findTeamById(teamId);
     if (team) {
+      console.log(`teams/${teamId}/avatar/small_${team.avatar}`)
       team.avatar = await this.cloudfrontService._getSignedUrl(`teams/${teamId}/avatar/small_${team.avatar}`);
     }
     return instanceToPlain(team);

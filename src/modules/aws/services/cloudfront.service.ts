@@ -4,8 +4,9 @@ import { Injectable } from "@nestjs/common";
 @Injectable()
 export class CloudfrontService {
   async _getSignedUrl(filePath: string) {
+    console.log('path', filePath)
     return getSignedUrl({
-      url: `https://d10i15zmv37cwi.cloudfront.net/${filePath}`,
+      url: `https://d26t4jubdfqdzf.cloudfront.net/${filePath}`,
       dateLessThan: new Date(Date.now() + 1000 * 60 * 60 * 24).toISOString(),
       keyPairId: process.env.CLOUDFRONT_KEY_PAIR_ID as string,
       privateKey: process.env.CLOUDFRONT_PRIVATE_KEY as string,

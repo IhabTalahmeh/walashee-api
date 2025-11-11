@@ -9,12 +9,21 @@ export class EntityOwnerGuard implements CanActivate {
     const req = context.switchToHttp().getRequest();
     const { user, params } = req;
 
-    const { agentId, teamId } = params;
+    const { agentId, teamId, customerId } = params;
+
+    if (customerId) {
+      console.log('user.sub', user.sub)
+      const customr = await this.entityLookupService.findUserById(agentId);
+      if (!customr) throw new NotFoundException(`Custoemr ${customerId} not found`);
+      if (customerId !== user.sub) {
+        throw new UnauthorizedException(`You are not authorized as this customr`);
+      }
+    }
 
     if (agentId) {
       const agent = await this.entityLookupService.findUserById(agentId);
       if (!agent) throw new NotFoundException(`Agent ${agentId} not found`);
-      if (agent.id !== user.sub)
+      if (agentId !== user.sub)
         throw new UnauthorizedException(`You are not authorized as this agent`);
     }
 

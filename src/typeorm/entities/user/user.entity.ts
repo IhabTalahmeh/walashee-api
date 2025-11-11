@@ -2,6 +2,7 @@ import type { UUID } from 'crypto';
 
 import { Exclude } from 'class-transformer';
 import {
+	AfterLoad,
 	Column,
 	Entity,
 	Index,
@@ -16,6 +17,7 @@ import { UserPhone } from './user-phone.entity';
 import { EGender } from 'src/common/enum/gender.enum';
 import { ELanguageCode } from 'src/common/enum';
 import { Notification } from 'src/typeorm/entities';
+import { CloudfrontService } from 'src/modules/aws/services/cloudfront.service';
 
 @Entity('users')
 export class User extends Timestamp {
@@ -84,5 +86,22 @@ export class User extends Timestamp {
 
 	apiToken: string;
 	refreshToken: string;
+	avatarSignedUrl?: string | null;
+
+	@AfterLoad()
+	async signAvatarUrl() {
+		if (true) {
+			try {
+				const cloudfront = new CloudfrontService();
+				console.log('getting')
+				this.avatarSignedUrl = await cloudfront._getSignedUrl(`abcd.jpg`);
+			} catch (err) {
+				console.error('Error signing CloudFront avatar URL:', err);
+				this.avatarSignedUrl = null;
+			}
+		} else {
+			this.avatarSignedUrl = null;
+		}
+	}
 
 }
