@@ -1,3 +1,6 @@
 {
-    "hello": "Hello"
+    "hello": "Hello",
+    "message": "{fullName} has invited you to join their team as {role}.",
+    "agent": "an agent",
+    "title": "Team invitation"
 }

@@ -106,11 +106,17 @@ export class FCMService {
 			type: ENotificationType.TEAM_INVITATION,
 			screen: 'NotificationsScreen',
 			params: {},
-			titleAr: this.i18n.t('test.hello', { lang: 'ar' }),
-			titleEn: this.i18n.t('test.hello', { lang: 'en' }),
+			titleAr: this.i18n.t('test.title', { lang: 'ar' }),
+			titleEn: this.i18n.t('test.title', { lang: 'en' }),
 			event: '',
-			messageAr: `قام ${invitation.inviter.fullName} بدعوتك للإنضمام إلى فريقه كـ ${invitation.as}.`,
-			messageEn: `${invitation.inviter.fullName} sent you a request to join their team as ${invitation.as}`,
+			messageAr: this.i18n.translate('test.message', {
+				lang: 'ar',
+				args: { fullName: invitation.inviter.fullName, role: this.i18n.t(`test.${invitation.as}`, { lang: 'ar' }) }
+			}),
+			messageEn: this.i18n.translate('test.message', {
+				lang: 'en',
+				args: { fullName: invitation.inviter.fullName, role: this.i18n.t(`test.${invitation.as}`, { lang: 'en' }) }
+			}),
 		});
 
 		if (fcmToken) {
