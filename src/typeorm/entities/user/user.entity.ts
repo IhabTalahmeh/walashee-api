@@ -18,6 +18,7 @@ import { EGender } from 'src/common/enum/gender.enum';
 import { ELanguageCode } from 'src/common/enum';
 import { Notification } from 'src/typeorm/entities';
 import { CloudfrontService } from 'src/modules/aws/services/cloudfront.service';
+import { IAvatar } from 'src/common/interfaces/avatar.interface';
 
 @Entity('users')
 export class User extends Timestamp {
@@ -86,22 +87,41 @@ export class User extends Timestamp {
 
 	apiToken: string;
 	refreshToken: string;
-	avatarSignedUrl?: string | null;
+	avatars?: IAvatar;
 
 	@AfterLoad()
 	async signAvatarUrl() {
-		if (true) {
-			try {
-				const cloudfront = new CloudfrontService();
-				console.log('getting')
-				this.avatarSignedUrl = await cloudfront._getSignedUrl(`abcd.jpg`);
-			} catch (err) {
-				console.error('Error signing CloudFront avatar URL:', err);
-				this.avatarSignedUrl = null;
+		if (!this.avatar) {
+			this.avatars = { small: null, medium: null, large: null };
+			return;
+		}
+
+		try {
+			const cloudfront = new CloudfrontService();
+
+			const sizes: Array<keyof IAvatar> = ['small', 'medium', 'large'];
+			const avatars: IAvatar = { small: null, medium: null, large: null };
+
+			for (const size of sizes) {
+				const path = this._getAvatarPath(size);
+				avatars[size] = await cloudfront._getSignedUrl(path);
 			}
-		} else {
-			this.avatarSignedUrl = null;
+
+			this.avatars = avatars;
+		} catch (err) {
+			console.error('Error signing CloudFront avatar URLs:', err);
+			this.avatars = { small: null, medium: null, large: null };
 		}
 	}
 
+	/**
+	 * Helper to generate size-specific avatar path.
+	 * Example:
+	 *   avatars/user123/original.jpg → avatars/user123/medium-original.jpg
+	 * Adjust to your naming convention as needed.
+	 */
+	private _getAvatarPath(size: string): string {
+		if (!this.avatar) return '';
+		return this.avatar.replace(/(\/)?([^/]+)$/, `$1${size}-$2`);
+	}
 }
