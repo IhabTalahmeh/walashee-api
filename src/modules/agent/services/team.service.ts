@@ -65,7 +65,7 @@ export class TeamService {
     const saved = await this.teamRepo.save(created);
 
     if (file && avatar) {
-      await this.awsHelper.uploadTeamAvatar(saved.id, file, avatar)
+      await this.awsHelper.uploadAvatar(`teams/${saved.id}/avatar`, file, avatar)
     }
 
     return saved;

@@ -10,6 +10,7 @@ import { UtilityService } from 'src/common/services/utility.service';
 import { AuthModule } from '../auth/auth.module';
 import { VerificationCode } from 'src/typeorm/entities/auth/verification-code.entity';
 import { AwsModule } from '../aws/aws.module';
+import { AWSHelper } from 'src/common/services/aws-helper.service';
 
 @Module({
 	imports: [
@@ -26,7 +27,12 @@ import { AwsModule } from '../aws/aws.module';
 		AwsModule,
 	],
 	controllers: [UsersController],
-	providers: [UsersService, EntityLookupService, UtilityService],
+	providers: [
+		UsersService,
+		EntityLookupService,
+		UtilityService,
+		AWSHelper,
+	],
 	exports: [TypeOrmModule],
 })
-export class UsersModule {}
+export class UsersModule { }

@@ -104,7 +104,7 @@ export class User extends Timestamp {
 
 			for (const size of sizes) {
 				const path = this._getAvatarPath(size);
-				avatars[size] = await cloudfront._getSignedUrl(path);
+				avatars[size] = await cloudfront._getSignedUrl(`users/${this.id}/avatar/${size}_${this.avatar}`);
 			}
 
 			this.avatars = avatars;

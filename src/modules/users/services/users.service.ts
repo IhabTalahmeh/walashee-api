@@ -17,6 +17,7 @@ import { UpdateProfileDto } from '../dto/update-profile.dto';
 import { UtilityService } from 'src/common/services/utility.service';
 import { EntityLookupService } from 'src/modules/entity-lookup/services/entity-lookup.service';
 import { instanceToPlain } from 'class-transformer';
+import { AWSHelper } from 'src/common/services/aws-helper.service';
 
 @Injectable()
 export class UsersService {
@@ -26,21 +27,34 @@ export class UsersService {
 		private entityLookupService: EntityLookupService,
 		private _config: ConfigService,
 		private utility: UtilityService,
+		private awsHelper: AWSHelper,
 	) { }
 
 	async updateProfile(
 		userId: UUID,
+		file: Buffer | null,
 		dto: UpdateProfileDto,
 	) {
 		let user = await this.entityLookupService.findUserById(userId);
+		const avatar = file ? `${Date.now()}.jpg` : undefined;
 
 		if (!user) {
 			throw new NotFoundException();
 		}
 
-		await this.usersRepo.update(userId, dto);
+		console.log(file, avatar);
+
+		if (file && avatar) {
+			await this.awsHelper.uploadAvatar(`users/${user.id}/avatar`, file, avatar)
+		}
+
+		console.log('dto', dto);
+
+		await this.usersRepo.update(userId, { ...dto, avatar });
 
 		user = await this.entityLookupService.findUserById(userId);
+
+		console.log('avatar')
 
 		return instanceToPlain(user);
 	}

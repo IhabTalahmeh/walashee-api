@@ -4,6 +4,7 @@ import {
 	Controller,
 	Patch,
 	Req,
+	UploadedFile,
 	UseGuards,
 	UseInterceptors,
 	UsePipes,
@@ -13,6 +14,8 @@ import { ApiBearerAuth, ApiBody, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../../../common/guard/jwt-auth.guard';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
 import { UsersService } from '../services/users.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { ImageValidationPipe } from 'src/common/validators/image.validator';
 
 @Controller('users')
 @ApiTags('Users')
@@ -29,6 +32,7 @@ export class UsersController {
 
 
 	@Patch('me/profile')
+	@UseInterceptors(FileInterceptor('file'))
 	@ApiBody({
 		description: 'Update user profile',
 		type: UpdateProfileDto,
@@ -36,8 +40,10 @@ export class UsersController {
 	updateProfile(
 		@Req() request,
 		@Body() dto: UpdateProfileDto,
+		@UploadedFile(ImageValidationPipe) file: Express.Multer.File,
 	) {
 		const userId = request.user.sub;
-		return this.usersService.updateProfile(userId, dto);
+		const avatar = file?.buffer ? file.buffer : null;
+		return this.usersService.updateProfile(userId, avatar, dto);
 	}
 }
