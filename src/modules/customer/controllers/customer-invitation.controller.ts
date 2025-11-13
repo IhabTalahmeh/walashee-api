@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, Req, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
+import { Controller, Delete, Get, Param, Query, Req, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
 import { ListDto } from "src/common/dto";
 import { EntityOwnerGuard } from "src/common/guard/entity-owner.guard";
 import { CustomerInvitationService } from "../services/customer-invitation.service";
@@ -22,12 +22,20 @@ export class CustomerInvitationController {
         private customerInvitationService: CustomerInvitationService,
     ) { }
 
-    @Get()    
+    @Get()
     async getTeamInvitations(
         @Param('customerId') customerId: UUID,
         @Query() query: TeamInvitationQueryDto,
     ) {
         return this.customerInvitationService.getTeamInvitations(customerId, query);
+    }
+
+    @Delete(':invitationId')
+    async rejectTeamInvitation(
+        @Param('customerId') customerId: UUID,
+        @Param('invitationId') invitationId: UUID,
+    ) {
+        return this.customerInvitationService.rejectTeamInvitation(customerId, invitationId);
     }
 
 }

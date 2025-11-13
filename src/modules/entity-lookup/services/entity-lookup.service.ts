@@ -187,7 +187,7 @@ export class EntityLookupService {
     });
   }
 
-  async findPendingTeamInvitatinById(invitationId: UUID, relations: string[] = []) {
+  async findPendingTeamInvitationById(invitationId: UUID, relations: string[] = []) {
     return await this.teamInvitationRepo.findOne({
       where: {
         id: invitationId,

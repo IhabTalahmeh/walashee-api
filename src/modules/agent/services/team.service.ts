@@ -166,7 +166,7 @@ export class TeamService {
   }
 
   async cancelTeamInvitation(userId: UUID, invitationId: UUID) {
-    const pendingInvitation = await this.entityLookupService.findPendingTeamInvitatinById(invitationId, ['inviter']);
+    const pendingInvitation = await this.entityLookupService.findPendingTeamInvitationById(invitationId, ['inviter']);
 
     if (!pendingInvitation) {
       throw new NotFoundException({

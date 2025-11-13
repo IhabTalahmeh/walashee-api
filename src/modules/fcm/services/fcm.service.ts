@@ -89,7 +89,7 @@ export class FCMService {
 
 	async sendTeamInvitationNotification(invitationId: UUID, lang: string) {
 
-		const invitation = await this.entityLookupService.findPendingTeamInvitatinById(invitationId, ['inviter', 'invitee']);
+		const invitation = await this.entityLookupService.findPendingTeamInvitationById(invitationId, ['inviter', 'invitee']);
 
 		if (!invitation) {
 			throw new NotFoundException({
@@ -106,16 +106,16 @@ export class FCMService {
 			type: ENotificationType.TEAM_INVITATION,
 			screen: 'InvitationsScreen',
 			params: {},
-			titleAr: this.i18n.t('test.title', { lang: 'ar' }),
-			titleEn: this.i18n.t('test.title', { lang: 'en' }),
+			titleAr: this.i18n.t('invitations.title', { lang: 'ar' }),
+			titleEn: this.i18n.t('invitations.title', { lang: 'en' }),
 			event: '',
-			messageAr: this.i18n.translate('test.message', {
+			messageAr: this.i18n.translate('invitations.message', {
 				lang: 'ar',
-				args: { fullName: invitation.inviter.fullName, role: this.i18n.t(`test.${invitation.as}`, { lang: 'ar' }) }
+				args: { fullName: invitation.inviter.fullName, role: this.i18n.t(`invitations.${invitation.as}`, { lang: 'ar' }) }
 			}),
-			messageEn: this.i18n.translate('test.message', {
+			messageEn: this.i18n.translate('invitations.message', {
 				lang: 'en',
-				args: { fullName: invitation.inviter.fullName, role: this.i18n.t(`test.${invitation.as}`, { lang: 'en' }) }
+				args: { fullName: invitation.inviter.fullName, role: this.i18n.t(`invitations.${invitation.as}`, { lang: 'en' }) }
 			}),
 		});
 
