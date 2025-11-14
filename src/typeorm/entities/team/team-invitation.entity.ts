@@ -1,11 +1,11 @@
-import { Column, Entity, Index, ManyToOne, PrimaryColumn } from "typeorm";
-import { Timestamp } from "./timestamp.entity";
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToOne, PrimaryColumn } from "typeorm";
 import type { UUID } from "crypto";
 import { User } from "../user/user.entity";
 import { EInvitationStatus, ETeamRole } from "src/common/enum";
+import { Timestamp } from "../common/timestamp.entity";
+import { TeamInvitationRequest } from "./team-invitation-request.entity";
 
 @Entity('team_invitations')
-@Index('unique_invitation_per_user', ['inviter', 'invitee', 'as'], { unique: true })
 export class TeamInvitation extends Timestamp {
 
   @PrimaryColumn({ type: 'uuid' })
@@ -30,4 +30,7 @@ export class TeamInvitation extends Timestamp {
     nullable: false,
   })
   status: EInvitationStatus;
+
+  @OneToOne(() => TeamInvitationRequest, request => request.invitation)
+  request: TeamInvitationRequest;
 }

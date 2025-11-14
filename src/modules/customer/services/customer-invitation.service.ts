@@ -6,8 +6,9 @@ import { ListDto } from "src/common/dto";
 import { EInvitationStatus } from "src/common/enum";
 import { getListDto } from "src/common/utils/utils";
 import { EntityLookupService } from "src/modules/entity-lookup/services/entity-lookup.service";
-import { TeamInvitation } from "src/typeorm/entities/common/team-invitation.entity";
 import { In, Repository } from "typeorm";
+import { RequestToJoinATeamDto } from "../dto/request-to-join-team.dto";
+import { TeamInvitation } from "src/typeorm/entities";
 
 
 @Injectable()
@@ -63,6 +64,31 @@ export class CustomerInvitationService {
         }
 
         await this.teamInvitationRepo.delete(pendingInvitation.id);
+    }
+
+    async requestToJoinATeam(customerId: UUID, invitationId: UUID, doc: Buffer, dto: RequestToJoinATeamDto) {
+        const invitation = await this.entityLookupService.findPendingTeamInvitationById(invitationId, ['inviter', 'invitee']);
+
+        if (!invitation) {
+            throw new NotFoundException({
+                code: 'invitation-not-found',
+                message: "Invitation not found",
+            });
+        }
+
+        if (invitation.invitee.id !== customerId) {
+            throw new UnauthorizedException({
+                code: 'invitation-is-not-yours',
+                message: "Invitation is not yours",
+            });
+        }
+
+        return 'hello world';
+
+        console.log(doc);
+        console.log(dto);
+
+
     }
 
 }

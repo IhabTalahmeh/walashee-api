@@ -7,7 +7,6 @@ import { Team } from "src/typeorm/entities/common/team.entity";
 import { In, Repository } from "typeorm";
 import { UtilityService } from "src/common/services/utility.service";
 import { instanceToPlain } from "class-transformer";
-import { TeamInvitation } from "src/typeorm/entities/common/team-invitation.entity";
 import { EInvitationStatus, ERoleType, ETeamRole } from "src/common/enum";
 import { PhoneDto } from "src/modules/auth/dto/phone.dto";
 import { getFullPhoneNumber, getListDto, removeLeadingZero } from "src/common/utils/utils";
@@ -17,6 +16,7 @@ import { AwsService } from "src/modules/aws/services/aws.service";
 import { AWSHelper } from "src/common/services/aws-helper.service";
 import { CloudfrontService } from "src/modules/aws/services/cloudfront.service";
 import { FCMService } from "src/modules/fcm/services/fcm.service";
+import { TeamInvitation } from "src/typeorm/entities";
 
 
 

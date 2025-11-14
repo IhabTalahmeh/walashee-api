@@ -13,4 +13,7 @@ export * from './common/county.entity';
 export * from './common/company.entity';
 export * from './common/notification.entity';
 
+export * from './team/team-invitation-request.entity';
+export * from './team/team-invitation.entity';
+
 export * from './auth/reset-password-codes.entity';

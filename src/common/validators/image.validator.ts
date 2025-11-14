@@ -1,4 +1,4 @@
-import { BadRequestException, FileValidator, Injectable, PipeTransform } from "@nestjs/common";
+import { BadRequestException, FileValidator, PipeTransform } from "@nestjs/common";
 
 class ImageFileValidator extends FileValidator {
   constructor() {
@@ -11,36 +11,43 @@ class ImageFileValidator extends FileValidator {
   }
 
   buildErrorMessage(): string {
-    return 'Only JPEG or PNG or WEBP images are allowed';
+    return 'Only JPEG, PNG, or WEBP images are allowed';
   }
 }
 
-@Injectable()
+/**
+ * Validate a single uploaded image.
+ */
 export class ImageValidationPipe implements PipeTransform {
   private validator = new ImageFileValidator();
 
+  constructor(private readonly required: boolean = false) {}
+
   transform(file: Express.Multer.File) {
-    if (!file) {
-      // throw new BadRequestException('File is required');
+    if (!file && this.required) {
+      throw new BadRequestException('File is required');
     }
 
-    if(file){
-      if (!this.validator.isValid(file)) {
-        throw new BadRequestException(this.validator.buildErrorMessage());
-      }
+    if (file && !this.validator.isValid(file)) {
+      throw new BadRequestException(this.validator.buildErrorMessage());
     }
-    
+
     return file;
   }
 }
 
-@Injectable()
+/**
+ * Validate multiple uploaded images.
+ */
 export class ImagesValidationPipe implements PipeTransform {
   private validator = new ImageFileValidator();
 
   transform(files: Express.Multer.File[]) {
+    if (!Array.isArray(files)) {
+      throw new BadRequestException('Files are required');
+    }
 
-    for (let file of files) {
+    for (const file of files) {
       if (!file) {
         throw new BadRequestException('File is required');
       }
@@ -49,6 +56,7 @@ export class ImagesValidationPipe implements PipeTransform {
         throw new BadRequestException(this.validator.buildErrorMessage());
       }
     }
+
     return files;
   }
 }

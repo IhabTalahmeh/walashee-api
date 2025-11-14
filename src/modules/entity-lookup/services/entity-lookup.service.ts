@@ -7,12 +7,11 @@ import { UserPhone } from "src/typeorm/entities";
 import { VerificationCode } from "src/typeorm/entities/auth/verification-code.entity";
 import { Address } from "src/typeorm/entities/common/address.entity";
 import { Country } from "src/typeorm/entities/common/county.entity";
-import { TeamInvitation } from "src/typeorm/entities/common/team-invitation.entity";
 import { Team } from "src/typeorm/entities/common/team.entity";
 import { UserEmail } from "src/typeorm/entities/user/user-email.entity";
 import { User } from "src/typeorm/entities/user/user.entity";
 import { Repository } from "typeorm";
-
+import { TeamInvitation } from 'src/typeorm/entities';
 
 @Injectable()
 export class EntityLookupService {
@@ -192,6 +191,16 @@ export class EntityLookupService {
       where: {
         id: invitationId,
         status: EInvitationStatus.PENDING,
+      },
+      relations,
+    });
+  }
+
+  async findInReviewTeamInvitationById(invitationId: UUID, relations: string[] = []) {
+    return await this.teamInvitationRepo.findOne({
+      where: {
+        id: invitationId,
+        status: EInvitationStatus.IN_REVIEW,
       },
       relations,
     });

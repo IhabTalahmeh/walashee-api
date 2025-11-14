@@ -4,7 +4,7 @@ import { UUID } from "crypto";
 import { EInvitationStatus, ETeamRole } from "src/common/enum";
 import { UtilityService } from "src/common/services/utility.service";
 import { EntityLookupService } from "src/modules/entity-lookup/services/entity-lookup.service";
-import { TeamInvitation } from "src/typeorm/entities/common/team-invitation.entity";
+import { TeamInvitation } from "src/typeorm/entities";
 import { Repository } from "typeorm";
 
 
