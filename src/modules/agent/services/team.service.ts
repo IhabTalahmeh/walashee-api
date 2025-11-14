@@ -84,7 +84,7 @@ export class TeamService {
     return instanceToPlain(team);
   }
 
-  async inviteAgentToTeam(inviterId: UUID, dto: PhoneDto, lang: string) {
+  async inviteAgentToTeam(inviterId: UUID, teamId: UUID, dto: PhoneDto, lang: string) {
 
     const fullPhoneNumber = getFullPhoneNumber(dto);
     const invitee = await this.entityLookupService.findUserByPhoneNumber(fullPhoneNumber);
@@ -104,7 +104,7 @@ export class TeamService {
       });
     }
 
-    const team = await this.teamInvitationRepo.findOne({
+    const invitation = await this.teamInvitationRepo.findOne({
       where: {
         inviter: { id: inviterId },
         invitee: { id: invitee.id },
@@ -112,17 +112,19 @@ export class TeamService {
       },
     });
 
-    if (team?.status == EInvitationStatus.ACCEPTED) {
+    if (invitation?.status == EInvitationStatus.ACCEPTED) {
       throw new ConflictException({
         code: "agent-already-team-member",
         message: "Agent is alrady a member in your team",
       });
-    } else if (team?.status == EInvitationStatus.PENDING || team?.status == EInvitationStatus.IN_REVIEW) {
+    } else if (invitation?.status == EInvitationStatus.PENDING || invitation?.status == EInvitationStatus.IN_REVIEW) {
       throw new ConflictException({
         code: "agent-already-invited",
         message: "Agent is already invited",
       });
     }
+
+    console.log('team', invitation)
 
     const created = this.teamInvitationRepo.create({
       id: this.utility.generateUUID(),
@@ -130,6 +132,7 @@ export class TeamService {
       invitee: { id: invitee.id },
       as: ETeamRole.AGENT,
       status: EInvitationStatus.PENDING,
+      team: { id: teamId },
     });
 
     const saved = await this.teamInvitationRepo.save(created);

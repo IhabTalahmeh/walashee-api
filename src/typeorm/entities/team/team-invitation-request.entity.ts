@@ -38,7 +38,7 @@ export class TeamInvitationRequest extends Timestamp {
     @Column({ nullable: false })
     doc: string;
 
-    @OneToOne(() => TeamInvitation, invitation => invitation.request, { eager: true })
+    @OneToOne(() => TeamInvitation, invitation => invitation.request, { eager: true, onDelete: 'CASCADE' })
     @JoinColumn()
     invitation: TeamInvitation;
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, UploadedFile, UseInterceptors } from "@nestjs/common";
+import { Controller, Get, Post, UploadedFile, UseInterceptors } from "@nestjs/common";
 import { ScannerService } from "../services/scanner.service";
 import { FileInterceptor } from "@nestjs/platform-express";
 import { ImageValidationPipe } from "src/common/validators/image.validator";
@@ -12,7 +12,7 @@ export class ScannerController {
         private scannerService: ScannerService,
     ) { }
 
-    @Get('id-scanner')
+    @Post('id-scanner')
     @UseInterceptors(FileInterceptor('file'))
     async scanID(
         @UploadedFile(new ImageValidationPipe(true)) file: Express.Multer.File,

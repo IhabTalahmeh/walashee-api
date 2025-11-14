@@ -83,6 +83,7 @@ export class CustomerInvitationService {
             });
         }
 
+        console.log('asdf')
         return 'hello world';
 
         console.log(doc);

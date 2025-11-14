@@ -4,6 +4,7 @@ import { User } from "../user/user.entity";
 import { EInvitationStatus, ETeamRole } from "src/common/enum";
 import { Timestamp } from "../common/timestamp.entity";
 import { TeamInvitationRequest } from "./team-invitation-request.entity";
+import { Team } from "../common/team.entity";
 
 @Entity('team_invitations')
 export class TeamInvitation extends Timestamp {
@@ -16,6 +17,9 @@ export class TeamInvitation extends Timestamp {
 
   @ManyToOne(() => User, user => user.id, { nullable: false })
   invitee: User;
+
+  @ManyToOne(() => Team, team => team.id, { nullable: false, onDelete: 'CASCADE' })
+  team: Team;
 
   @Column({
     type: 'enum',

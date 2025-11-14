@@ -47,9 +47,8 @@ export class CustomerInvitationController {
         @Param('customerId') customerId: UUID,
         @Param('invitationId') invitationId: UUID,
         @Body() dto: RequestToJoinATeamDto,
-        @UploadedFile(new ImageValidationPipe(true)) file: Express.Multer.File,
+        @UploadedFile(ImageValidationPipe) file: Express.Multer.File,
     ) {
-        return { message: 'hello world' };
         return this.customerInvitationService.requestToJoinATeam(customerId, invitationId, file?.buffer, dto);
     }
 

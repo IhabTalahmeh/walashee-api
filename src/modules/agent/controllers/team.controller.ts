@@ -82,10 +82,11 @@ export class TeamController {
     async inviteAgentToTeam(
         @Req() request,
         @Body() dto: PhoneDto,
-        @I18nLang() lang: string
+        @I18nLang() lang: string,
+        @Param('teamId') teamId: UUID,
     ) {
         const userId = request.user.sub;
-        return this.teamService.inviteAgentToTeam(userId, dto, lang);
+        return this.teamService.inviteAgentToTeam(userId, teamId, dto, lang);
     }
 
     @Get(':teamId/invitations')
