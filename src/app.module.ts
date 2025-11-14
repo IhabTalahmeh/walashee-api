@@ -21,6 +21,7 @@ import { I18nModule, QueryResolver, AcceptLanguageResolver, HeaderResolver } fro
 import * as path from 'path';
 import { NotificationModule } from './modules/notification/notification.module';
 import { CustomerModule } from './modules/customer/customer.module';
+import { ScannerModule } from './modules/scanner/scanner.module';
 
 const configurations = [
   database,
@@ -74,6 +75,7 @@ const configurations = [
     FcmModule,
     NotificationModule,
     CustomerModule,
+    ScannerModule,
   ],
   controllers: [AppController],
   providers: [AppService],
