@@ -22,6 +22,7 @@ import * as path from 'path';
 import { NotificationModule } from './modules/notification/notification.module';
 import { CustomerModule } from './modules/customer/customer.module';
 import { ScannerModule } from './modules/scanner/scanner.module';
+import { AdminModule } from './modules/admin/admin.module';
 
 const configurations = [
   database,
@@ -76,6 +77,7 @@ const configurations = [
     NotificationModule,
     CustomerModule,
     ScannerModule,
+    AdminModule,
   ],
   controllers: [AppController],
   providers: [AppService],

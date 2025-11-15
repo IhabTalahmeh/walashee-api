@@ -48,6 +48,12 @@ import { Team } from 'src/typeorm/entities/common/team.entity';
     WhatsappService
   ],
   controllers: [AuthController],
-  exports: [JwtStrategy, TypeOrmModule],
+  exports: [
+    JwtStrategy,
+    TypeOrmModule,
+    AccessTokenGeneratorService,
+    AuthService,
+    VerificationService,
+  ],
 })
 export class AuthModule { }
