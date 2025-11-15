@@ -7,10 +7,14 @@ import {
     Index,
     OneToOne,
     PrimaryGeneratedColumn,
-    JoinColumn
+    JoinColumn,
+    ManyToOne
 } from 'typeorm';
 import { Timestamp } from '../common/timestamp.entity';
 import { TeamInvitation } from './team-invitation.entity';
+import { EInvitationStatus } from 'src/common/enum';
+import { EInvitationRequestStatus } from 'src/common/enum/invitation-request-status.enum';
+import { User } from '..';
 
 @Entity('team_invitation_requests')
 export class TeamInvitationRequest extends Timestamp {
@@ -38,7 +42,21 @@ export class TeamInvitationRequest extends Timestamp {
     @Column({ nullable: false })
     doc: string;
 
-    @OneToOne(() => TeamInvitation, invitation => invitation.request, { eager: true, onDelete: 'CASCADE' })
+    @ManyToOne(() => TeamInvitation, invitation => invitation.request, { eager: true, onDelete: 'CASCADE' })
     @JoinColumn()
     invitation: TeamInvitation;
+
+    @Column({
+        type: 'enum',
+        enum: EInvitationRequestStatus,
+        default: EInvitationRequestStatus.PENDING,
+    })
+    status: EInvitationRequestStatus;
+
+    @ManyToOne(() => User, { eager: true, nullable: true })
+    @JoinColumn()
+    processedBy: User | null;
+
+    @Column({ type: 'timestamp', nullable: true })
+    processedAt: Date | null;
 }

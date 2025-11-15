@@ -1,4 +1,4 @@
-import { Column, Entity, Index, JoinColumn, ManyToOne, OneToOne, PrimaryColumn } from "typeorm";
+import { Column, Entity, Index, JoinColumn, ManyToOne, OneToMany, OneToOne, PrimaryColumn } from "typeorm";
 import type { UUID } from "crypto";
 import { User } from "../user/user.entity";
 import { EInvitationStatus, ETeamRole } from "src/common/enum";
@@ -35,6 +35,6 @@ export class TeamInvitation extends Timestamp {
   })
   status: EInvitationStatus;
 
-  @OneToOne(() => TeamInvitationRequest, request => request.invitation)
-  request: TeamInvitationRequest;
+  @OneToMany(() => TeamInvitationRequest, request => request.invitation)
+  request: TeamInvitationRequest[];
 }

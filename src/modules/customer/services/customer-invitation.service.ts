@@ -8,7 +8,10 @@ import { getListDto } from "src/common/utils/utils";
 import { EntityLookupService } from "src/modules/entity-lookup/services/entity-lookup.service";
 import { In, Repository } from "typeorm";
 import { RequestToJoinATeamDto } from "../dto/request-to-join-team.dto";
-import { TeamInvitation } from "src/typeorm/entities";
+import { TeamInvitation, TeamInvitationRequest } from "src/typeorm/entities";
+import { AWSHelper } from "src/common/services/aws-helper.service";
+import { UtilityService } from "src/common/services/utility.service";
+import { AwsService } from "src/modules/aws/services/aws.service";
 
 
 @Injectable()
@@ -18,7 +21,12 @@ export class CustomerInvitationService {
         @InjectRepository(TeamInvitation)
         private teamInvitationRepo: Repository<TeamInvitation>,
 
+        @InjectRepository(TeamInvitationRequest)
+        private teamInvitationRequestRepo: Repository<TeamInvitationRequest>,
+
+        private awsService: AwsService,
         private entityLookupService: EntityLookupService,
+        private utility: UtilityService,
     ) { }
 
     async getTeamInvitations(userId: UUID, dto: ListDto) {
@@ -68,7 +76,7 @@ export class CustomerInvitationService {
 
     async requestToJoinATeam(customerId: UUID, invitationId: UUID, doc: Buffer, dto: RequestToJoinATeamDto) {
         const invitation = await this.entityLookupService.findPendingTeamInvitationById(invitationId, ['inviter', 'invitee']);
-
+        const fileName = doc ? `${Date.now()}.jpg` : undefined;
         if (!invitation) {
             throw new NotFoundException({
                 code: 'invitation-not-found',
@@ -83,13 +91,17 @@ export class CustomerInvitationService {
             });
         }
 
-        console.log('asdf')
-        return 'hello world';
+        await this.awsService.uploadFile(`users/${customerId}/ids/${fileName}`, doc);
+        const created = this.teamInvitationRequestRepo.create({
+            id: this.utility.generateUUID(),
+            ...dto,
+            doc: fileName,
+            invitation: { id: invitation.id },
+        })
 
-        console.log(doc);
-        console.log(dto);
+        const saved = await this.teamInvitationRequestRepo.save(created);
 
-
+        return instanceToPlain(saved);
     }
 
 }
